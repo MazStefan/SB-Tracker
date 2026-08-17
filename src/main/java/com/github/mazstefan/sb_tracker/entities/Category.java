@@ -5,7 +5,7 @@ import com.github.mazstefan.sb_tracker.entities.enums.CategoryType;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "category")
+@Table(name = "categories")
 public class Category {
     
     @Id
