@@ -8,24 +8,30 @@ import com.github.mazstefan.sb_tracker.dtos.UserAuthResponseDTO;
 import com.github.mazstefan.sb_tracker.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
+import com.github.mazstefan.sb_tracker.security.CustomUserDetails;
+import com.github.mazstefan.sb_tracker.security.JwtUtil;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
     
+    private final AuthenticationManager authenticationManager;
     private final UserService userService;
+    private final JwtUtil jwtUtil;
 
-    public UserController(UserService userService) {
+    public UserController(AuthenticationManager authenticationManager, UserService userService, JwtUtil jwtUtil) {
+        this.authenticationManager = authenticationManager;
         this.userService = userService;
+        this.jwtUtil = jwtUtil;
     }
 
-    @PostMapping
+    @PostMapping("/register")
     public ResponseEntity<UserResponseDTO> registerUser(
             @Valid @RequestBody UserRegistrationDTO registrationDTO) {
 
@@ -38,25 +44,40 @@ public class UserController {
     public ResponseEntity<UserAuthResponseDTO> loginUser(
             @Valid @RequestBody UserLoginDTO loginDTO) {
 
-        UserAuthResponseDTO authResponse = userService.loginUser(loginDTO);
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        loginDTO.getEmail(),
+                        loginDTO.getPassword()
+                )
+        );
 
-        return ResponseEntity.ok(authResponse);
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+        String token = jwtUtil.generateToken(loginDTO.getEmail());
+
+        return ResponseEntity.ok(new UserAuthResponseDTO(token, userDetails.getId(), userDetails.getUsername()));
     }
     
-    @PostMapping("/{id}/password")
+    @PutMapping("/password")
     public ResponseEntity<String> updatePassword(
-            @PathVariable Long id,
+            Authentication authentication,
             @Valid @RequestBody UserPasswordUpdateDTO passwordUpdateDTO) {
         
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+        Long id = userDetails.getId();
+
         userService.updatePassword(id, passwordUpdateDTO);
 
         return ResponseEntity.ok("Password updated successfully");
     }
 
     @GetMapping("/me")
-    public ResponseEntity<UserResponseDTO> getMyProfile() {
-        //TODO: Replace with real JWT token generation in week 2
-        Long currentUserId = 1L; 
+    public ResponseEntity<UserResponseDTO> getMyProfile(Authentication authentication) {
+        
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+        Long currentUserId = userDetails.getId(); 
         
         UserResponseDTO getResponse = userService.getUserProfile(currentUserId);
 
