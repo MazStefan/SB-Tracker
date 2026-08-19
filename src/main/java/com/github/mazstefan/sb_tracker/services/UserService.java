@@ -49,9 +49,9 @@ public class UserService {
         }
 
         //TODO: Replace with real JWT token generation in week 2
-        Long dummyToken = 1234L;
+        String dummyToken = "1234L";
 
-        return mapToAuthResponseDTO(dummyToken, "Bearer", user);
+        return mapToAuthResponseDTO(dummyToken, user);
     }
 
     public void updatePassword(Long userId, UserPasswordUpdateDTO passwordUpdateDTO) {
@@ -81,10 +81,9 @@ public class UserService {
         );
     }
 
-    private UserAuthResponseDTO mapToAuthResponseDTO(Long token, String type, User user) {
+    private UserAuthResponseDTO mapToAuthResponseDTO(String token, User user) {
         return new UserAuthResponseDTO(
             token,
-            type,
             user.getId(),
             user.getEmail()
         );
