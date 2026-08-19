@@ -12,23 +12,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.github.mazstefan.sb_tracker.security.CustomUserDetails;
-import com.github.mazstefan.sb_tracker.security.JwtUtil;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
     
-    private final AuthenticationManager authenticationManager;
     private final UserService userService;
-    private final JwtUtil jwtUtil;
 
-    public UserController(AuthenticationManager authenticationManager, UserService userService, JwtUtil jwtUtil) {
-        this.authenticationManager = authenticationManager;
+    public UserController( UserService userService) {
         this.userService = userService;
-        this.jwtUtil = jwtUtil;
     }
 
     @PostMapping("/register")
@@ -44,18 +37,9 @@ public class UserController {
     public ResponseEntity<UserAuthResponseDTO> loginUser(
             @Valid @RequestBody UserLoginDTO loginDTO) {
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginDTO.getEmail(),
-                        loginDTO.getPassword()
-                )
-        );
+                UserAuthResponseDTO responseBody = userService.loginUser(loginDTO);
 
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-
-        String token = jwtUtil.generateToken(loginDTO.getEmail());
-
-        return ResponseEntity.ok(new UserAuthResponseDTO(token, userDetails.getId(), userDetails.getUsername()));
+        return ResponseEntity.ok(responseBody);
     }
     
     @PutMapping("/password")

@@ -8,21 +8,33 @@ import com.github.mazstefan.sb_tracker.dtos.UserAuthResponseDTO;
 import com.github.mazstefan.sb_tracker.entities.User;
 import com.github.mazstefan.sb_tracker.entities.enums.Role;
 import com.github.mazstefan.sb_tracker.repositories.UserRepository;
+import com.github.mazstefan.sb_tracker.security.CustomUserDetails;
+import com.github.mazstefan.sb_tracker.security.JwtUtil;
+
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService {
     
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtUtil;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            AuthenticationManager authenticationManager,
+            JwtUtil jwtUtil) {
+
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
+        this.jwtUtil = jwtUtil;
     }
 
     public UserResponseDTO registerUser(UserRegistrationDTO registrationDTO) {
@@ -41,17 +53,19 @@ public class UserService {
     }
 
     public UserAuthResponseDTO loginUser(UserLoginDTO loginDTO) {
-        User user = userRepository.findByEmail(loginDTO.getEmail())
-                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
-        
-        if (!passwordEncoder.matches(loginDTO.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid email or password");
-        }
 
-        //TODO: Replace with real JWT token generation in week 2
-        String dummyToken = "1234L";
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        loginDTO.getEmail(),
+                        loginDTO.getPassword()
+                )
+        );
 
-        return mapToAuthResponseDTO(dummyToken, user);
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+        String token = jwtUtil.generateToken(userDetails.getUsername());
+
+        return new UserAuthResponseDTO(token, userDetails.getId(), userDetails.getUsername());
     }
 
     public void updatePassword(Long userId, UserPasswordUpdateDTO passwordUpdateDTO) {
@@ -78,14 +92,6 @@ public class UserService {
             user.getId(),
             user.getEmail(),
             user.getCreatedAt()
-        );
-    }
-
-    private UserAuthResponseDTO mapToAuthResponseDTO(String token, User user) {
-        return new UserAuthResponseDTO(
-            token,
-            user.getId(),
-            user.getEmail()
         );
     }
 }
