@@ -63,24 +63,25 @@ public class UserController {
             Authentication authentication,
             @Valid @RequestBody UserPasswordUpdateDTO passwordUpdateDTO) {
         
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        Long currentUserId = extractUserId(authentication); 
 
-        Long id = userDetails.getId();
-
-        userService.updatePassword(id, passwordUpdateDTO);
+        userService.updatePassword(currentUserId, passwordUpdateDTO);
 
         return ResponseEntity.ok("Password updated successfully");
     }
 
     @GetMapping("/me")
     public ResponseEntity<UserResponseDTO> getMyProfile(Authentication authentication) {
-        
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-
-        Long currentUserId = userDetails.getId(); 
+        Long currentUserId = extractUserId(authentication); 
         
         UserResponseDTO getResponse = userService.getUserProfile(currentUserId);
 
         return ResponseEntity.ok(getResponse);
+    }
+
+    private Long extractUserId(Authentication authentication) {
+    CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+    return userDetails.getId();
     }
 }

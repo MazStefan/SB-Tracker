@@ -3,17 +3,17 @@ package com.github.mazstefan.sb_tracker.controllers;
 import com.github.mazstefan.sb_tracker.dtos.CategoryRequestDTO;
 import com.github.mazstefan.sb_tracker.dtos.CategoryResponseDTO;
 import com.github.mazstefan.sb_tracker.services.CategoryService;
+import com.github.mazstefan.sb_tracker.security.CustomUserDetails;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-
 @RestController
-@RequestMapping("/api/category")
+@RequestMapping("/api/categories")
 public class CategoryController {
     
     private final CategoryService categoryService;
@@ -24,9 +24,10 @@ public class CategoryController {
 
     @PostMapping
     public ResponseEntity<CategoryResponseDTO> createCategory(
+            Authentication authentication,
             @Valid @RequestBody CategoryRequestDTO requestDTO) {
-        //TODO: Replace with real JWT token generation in week 2
-        Long currentUserId = 1L;
+
+        Long currentUserId = extractUserId(authentication);
 
         CategoryResponseDTO createdCategory = categoryService.createCategory(requestDTO, currentUserId);
 
@@ -34,9 +35,8 @@ public class CategoryController {
     }
 
     @GetMapping
-    public ResponseEntity<List<CategoryResponseDTO>> getMyCategories() {
-        //TODO: Replace with real JWT token generation in week 2
-        Long currentUserId = 1L;
+    public ResponseEntity<List<CategoryResponseDTO>> getMyCategories(Authentication authentication) {
+        Long currentUserId = extractUserId(authentication);
 
         List<CategoryResponseDTO> categories = categoryService.getUserCategories(currentUserId);
 
@@ -45,10 +45,11 @@ public class CategoryController {
 
     @PutMapping("/{id}")
     public ResponseEntity<CategoryResponseDTO> updateCategory(
+            Authentication authentication,
             @PathVariable Long id, 
             @Valid @RequestBody CategoryRequestDTO requestDTO) {
-        //TODO: Replace with real JWT token generation in week 2
-        Long currentUserId = 1L;
+
+        Long currentUserId = extractUserId(authentication);
 
         CategoryResponseDTO updatedCategory = categoryService.updateCategory(requestDTO, id, currentUserId);
         
@@ -56,12 +57,20 @@ public class CategoryController {
     }
     
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
-        //TODO: Replace with real JWT token generation in week 2
-        Long currentUserId = 1L;
+    public ResponseEntity<Void> deleteCategory(
+            Authentication authentication,
+            @PathVariable Long id) {
+
+        Long currentUserId = extractUserId(authentication);
 
         categoryService.deleteCategory(id, currentUserId);
 
         return ResponseEntity.noContent().build(); 
+    }
+
+    private Long extractUserId(Authentication authentication) {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+        return userDetails.getId();
     }
 }
