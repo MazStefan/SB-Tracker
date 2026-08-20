@@ -1,6 +1,7 @@
 package com.github.mazstefan.sb_tracker.repositories;
 
 import com.github.mazstefan.sb_tracker.entities.Transaction;
+import com.github.mazstefan.sb_tracker.dtos.CategorySpendDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -25,5 +26,15 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
         @Param("categoryId") Long categoryId, 
         @Param("month") int month, 
         @Param("year") int year
+    );
+
+    @Query("SELECT new com.github.mazstefan.sb_tracker.dtos.CategorySpendDTO(t.category.name, SUM(t.amount)) " +
+           "FROM Transaction t " +
+           "WHERE t.user.id = :userId AND MONTH(t.date) = :month AND YEAR(t.date) = :year " +
+           "GROUP BY t.category.name")
+    List<CategorySpendDTO> getMonthlySpendReport(
+            @Param("userId") Long userId, 
+            @Param("month") int month, 
+            @Param("year") int year
     );
 }

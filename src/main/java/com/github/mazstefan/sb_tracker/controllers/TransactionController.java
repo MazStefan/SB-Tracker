@@ -1,5 +1,6 @@
 package com.github.mazstefan.sb_tracker.controllers;
 
+import com.github.mazstefan.sb_tracker.dtos.CategorySpendDTO;
 import com.github.mazstefan.sb_tracker.dtos.TransactionRequestDTO;
 import com.github.mazstefan.sb_tracker.dtos.TransactionResponseDTO;
 import com.github.mazstefan.sb_tracker.services.TransactionService;
@@ -11,6 +12,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 @RestController
@@ -81,6 +85,20 @@ public class TransactionController {
 
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/report")
+    public ResponseEntity<List<CategorySpendDTO>> getMonthlyReport(
+            Authentication authentication,
+            @RequestParam int month,
+            @RequestParam int year) {
+        
+        Long userId = extractUserId(authentication);
+
+        List<CategorySpendDTO> report = transactionService.generateMonthlyReport(userId, month, year);
+
+        return ResponseEntity.ok(report);
+    }
+    
 
     private Long extractUserId(Authentication authentication) {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();

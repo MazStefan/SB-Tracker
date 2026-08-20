@@ -1,5 +1,6 @@
 package com.github.mazstefan.sb_tracker.services;
 
+import com.github.mazstefan.sb_tracker.dtos.CategorySpendDTO;
 import com.github.mazstefan.sb_tracker.dtos.TransactionRequestDTO;
 import com.github.mazstefan.sb_tracker.dtos.TransactionResponseDTO;
 import com.github.mazstefan.sb_tracker.entities.Transaction;
@@ -103,6 +104,10 @@ public class TransactionService {
                 .orElseThrow(() -> new RuntimeException("Transaction not found"));
             
         transactionRepository.delete(transaction);
+    }
+
+    public List<CategorySpendDTO> generateMonthlyReport(Long userId, int month, int year) {
+        return transactionRepository.getMonthlySpendReport(userId, month, year);
     }
 
     private TransactionResponseDTO mapToResponseDTO(Transaction transaction) {
