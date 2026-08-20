@@ -6,10 +6,12 @@ import com.github.mazstefan.sb_tracker.entities.Transaction;
 import com.github.mazstefan.sb_tracker.entities.Category;
 import com.github.mazstefan.sb_tracker.entities.User;
 import com.github.mazstefan.sb_tracker.repositories.TransactionRepository;
+import com.github.mazstefan.sb_tracker.repositories.BudgetRepository;
 import com.github.mazstefan.sb_tracker.repositories.CategoryRepository;
 import com.github.mazstefan.sb_tracker.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,15 +21,18 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private final BudgetRepository budgetRepository;
 
     public TransactionService(
             TransactionRepository transactionRepository,
             CategoryRepository categoryRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            BudgetRepository budgetRepository) {
         
         this.transactionRepository = transactionRepository;
         this.categoryRepository = categoryRepository;
         this.userRepository = userRepository;
+        this.budgetRepository = budgetRepository;
     }
 
     public TransactionResponseDTO createTransaction(TransactionRequestDTO requestDTO, Long userId) {
@@ -36,6 +41,18 @@ public class TransactionService {
 
         Category category = categoryRepository.findByIdAndUserId(requestDTO.getCategoryId(), userId)
                 .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        Double budgetLimit = budgetRepository.findLimitByYearAndMonth(userId, category.getId(), LocalDate.now().getMonthValue(), LocalDate.now().getYear())
+                .orElse(null);
+
+        Double transactionSum = transactionRepository.sumTransactionsByCategoryAndMonth(userId, category.getId(), LocalDate.now().getMonthValue(), LocalDate.now().getYear())
+                .orElse(0.0);
+
+        Boolean overSpend = false;
+
+        if (budgetLimit != null && (transactionSum + requestDTO.getAmount().doubleValue() > budgetLimit)) {
+                overSpend = true;
+        }
         
         Transaction transaction = new Transaction();
         transaction.setAmount(requestDTO.getAmount());
@@ -46,7 +63,7 @@ public class TransactionService {
 
         Transaction savedTransaction = transactionRepository.save(transaction);
 
-        return mapToResponseDTO(savedTransaction);
+        return create_mapToResponseDTO(savedTransaction, overSpend);
     }
 
     public List<TransactionResponseDTO> getUserTransactions(Long userId) {
@@ -95,6 +112,17 @@ public class TransactionService {
                 transaction.getDescription(),
                 transaction.getDate(),
                 transaction.getCategory().getName()
+        );
+    }
+
+    private TransactionResponseDTO create_mapToResponseDTO(Transaction transaction, Boolean overSpend) {
+        return new TransactionResponseDTO(
+                transaction.getId(), 
+                transaction.getAmount(), 
+                transaction.getDescription(),
+                transaction.getDate(),
+                transaction.getCategory().getName(),
+                overSpend
         );
     }
 }
