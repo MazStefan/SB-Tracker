@@ -3,6 +3,7 @@ package com.github.mazstefan.sb_tracker.controllers;
 import com.github.mazstefan.sb_tracker.dtos.CategorySpendDTO;
 import com.github.mazstefan.sb_tracker.dtos.TransactionRequestDTO;
 import com.github.mazstefan.sb_tracker.dtos.TransactionResponseDTO;
+import com.github.mazstefan.sb_tracker.dtos.TransactionCreatedDTO;
 import com.github.mazstefan.sb_tracker.services.TransactionService;
 import com.github.mazstefan.sb_tracker.security.CustomUserDetails;
 import jakarta.validation.Valid;
@@ -28,13 +29,13 @@ public class TransactionController {
     }
 
     @PostMapping
-    public ResponseEntity<TransactionResponseDTO> createTransaction(
+    public ResponseEntity<TransactionCreatedDTO> createTransaction(
             Authentication authentication,
             @Valid @RequestBody TransactionRequestDTO requestDTO) {
 
         Long currentUserId = extractUserId(authentication);
 
-        TransactionResponseDTO createdTransaction = transactionService.createTransaction(requestDTO, currentUserId);
+        TransactionCreatedDTO createdTransaction = transactionService.createTransaction(requestDTO, currentUserId);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(createdTransaction);
     }

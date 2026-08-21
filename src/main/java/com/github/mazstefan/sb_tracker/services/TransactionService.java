@@ -3,6 +3,7 @@ package com.github.mazstefan.sb_tracker.services;
 import com.github.mazstefan.sb_tracker.dtos.CategorySpendDTO;
 import com.github.mazstefan.sb_tracker.dtos.TransactionRequestDTO;
 import com.github.mazstefan.sb_tracker.dtos.TransactionResponseDTO;
+import com.github.mazstefan.sb_tracker.dtos.TransactionCreatedDTO;
 import com.github.mazstefan.sb_tracker.entities.Transaction;
 import com.github.mazstefan.sb_tracker.entities.Category;
 import com.github.mazstefan.sb_tracker.entities.User;
@@ -36,7 +37,7 @@ public class TransactionService {
         this.budgetRepository = budgetRepository;
     }
 
-    public TransactionResponseDTO createTransaction(TransactionRequestDTO requestDTO, Long userId) {
+    public TransactionCreatedDTO createTransaction(TransactionRequestDTO requestDTO, Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -64,7 +65,7 @@ public class TransactionService {
 
         Transaction savedTransaction = transactionRepository.save(transaction);
 
-        return create_mapToResponseDTO(savedTransaction, overSpend);
+        return mapToCreatedDTO(savedTransaction, overSpend);
     }
 
     public List<TransactionResponseDTO> getUserTransactions(Long userId) {
@@ -120,8 +121,8 @@ public class TransactionService {
         );
     }
 
-    private TransactionResponseDTO create_mapToResponseDTO(Transaction transaction, Boolean overSpend) {
-        return new TransactionResponseDTO(
+    private TransactionCreatedDTO mapToCreatedDTO(Transaction transaction, Boolean overSpend) {
+        return new TransactionCreatedDTO(
                 transaction.getId(), 
                 transaction.getAmount(), 
                 transaction.getDescription(),

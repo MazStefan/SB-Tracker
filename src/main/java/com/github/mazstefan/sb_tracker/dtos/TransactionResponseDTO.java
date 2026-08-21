@@ -10,7 +10,6 @@ public class TransactionResponseDTO {
     private String description;
     private LocalDateTime date;
     private String categoryName;
-    private Boolean overSpend;
 
     public TransactionResponseDTO(Long id, BigDecimal amount, String description, LocalDateTime date, String categoryName) {
         this.id = id;
@@ -18,16 +17,6 @@ public class TransactionResponseDTO {
         this.description = description;
         this.date = date;
         this.categoryName = categoryName;
-        this.overSpend = false;
-    }
-
-    public TransactionResponseDTO(Long id, BigDecimal amount, String description, LocalDateTime date, String categoryName, Boolean overSpend) {
-        this.id = id;
-        this.amount = amount;
-        this.description = description;
-        this.date = date;
-        this.categoryName = categoryName;
-        this.overSpend = overSpend;
     }
 
     public Long getId() { return id; }
@@ -39,6 +28,4 @@ public class TransactionResponseDTO {
     public LocalDateTime getDate() { return date; }
 
     public String getCategoryName() { return categoryName; }
-
-    public Boolean getOverSpend() { return overSpend; }
 }
