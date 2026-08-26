@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { authService } from '../services/authService';
+import TransactionForm from '../components/TransactionForm';
 
 export default function Dashboard() {
     const [budgets, setBudgets] = useState([]);
@@ -60,6 +61,11 @@ export default function Dashboard() {
                     ))}
                 </div>
             )}
+            
+            <TransactionForm 
+                budgets={budgets} 
+                onTransactionAdded={() => window.location.reload()}
+            />
         </div>
     );
 }
