@@ -17,6 +17,11 @@ export const authService = {
         return response.data;
     },
 
+    changePassword: async (passwordData) => {
+        const response = await api.post('/users/password', passwordData);
+        return response.data;
+    },
+
     logout: () => {
         localStorage.removeItem('jwt_token');
     }
