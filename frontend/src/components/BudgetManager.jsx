@@ -3,18 +3,24 @@ import { dataService } from '../services/dataService';
 import api from '../services/api';
 
 export default function BudgetManager({ categories }) {
-    // 1. READ State (The list of budgets)
     const [budgets, setBudgets] = useState([]);
     
-    // 2. CREATE State (For the new budget form)
     const [newCategoryId, setNewCategoryId] = useState('');
     const [newAmountLimit, setNewAmountLimit] = useState('');
     
-    // 3. UPDATE State (Tracks which budget is currently being edited)
     const [editingBudgetId, setEditingBudgetId] = useState(null);
     const [editAmountLimit, setEditAmountLimit] = useState('');
 
-    // --- READ: Fetch budgets on load ---
+    const currentMonth = new Date().toISOString().slice(0, 7); 
+    const [monthYear, setMonthYear] = useState(currentMonth);
+
+    const formatMonthYear = (dateString) => {
+        if (!dateString) return '';
+        const [year, month] = dateString.split('-'); 
+        const dateObj = new Date(year, month - 1);
+        return dateObj.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+    };
+
     useEffect(() => {
         const fetchBudgets = async () => {
             try {
@@ -27,13 +33,13 @@ export default function BudgetManager({ categories }) {
         fetchBudgets();
     }, []);
 
-    // --- CREATE: Submit the new budget form ---
     const handleCreate = async (e) => {
         e.preventDefault();
         try {
             const newBudget = await dataService.createBudget({
                 categoryId: parseInt(newCategoryId),
-                amountLimit: parseFloat(newAmountLimit)
+                monthlyLimit: parseFloat(newAmountLimit),
+                monthYear: `${monthYear}-01`
             });
             setBudgets([...budgets, newBudget]);
             setNewCategoryId('');
@@ -43,7 +49,6 @@ export default function BudgetManager({ categories }) {
         }
     };
 
-    // --- DELETE: Remove a budget ---
     const handleDelete = async (id) => {
         if (!window.confirm("Delete this budget?")) return;
         try {
@@ -54,11 +59,10 @@ export default function BudgetManager({ categories }) {
         }
     };
 
-    // --- UPDATE: Save the edited budget ---
     const handleSaveEdit = async (id) => {
         try {
             const updatedBudget = await dataService.updateBudget(id, { 
-                amountLimit: parseFloat(editAmountLimit) 
+                monthlyLimit: parseFloat(editAmountLimit) 
             });
             
             setBudgets(budgets.map(b => b.id === id ? updatedBudget : b));
@@ -72,9 +76,7 @@ export default function BudgetManager({ categories }) {
     return (
         <div style={{ maxWidth: '600px', margin: '0 auto', fontFamily: 'sans-serif' }}>
             
-            {/* ========================================== */}
-            {/* 1. THE CREATE FORM                         */}
-            {/* ========================================== */}
+            {/* 1. THE CREATE FORM */}
             <div style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '8px', marginBottom: '30px' }}>
                 <h3>Create New Budget</h3>
                 <form onSubmit={handleCreate} style={{ display: 'flex', gap: '10px' }}>
@@ -99,6 +101,14 @@ export default function BudgetManager({ categories }) {
                         required 
                         style={{ padding: '8px', flex: 1 }}
                     />
+
+                    <input 
+                        type="month" 
+                        value={monthYear} 
+                        onChange={(e) => setMonthYear(e.target.value)} 
+                        required 
+                        style={{ padding: '8px', width: '150px' }}
+                    />
                     
                     <button type="submit" style={{ padding: '8px 16px', backgroundColor: '#007bff', color: 'white', border: 'none' }}>
                         Add
@@ -106,16 +116,14 @@ export default function BudgetManager({ categories }) {
                 </form>
             </div>
 
-            {/* ========================================== */}
-            {/* 2. THE LIST (WITH EDIT & DELETE)           */}
-            {/* ========================================== */}
+            {/* 2. THE LIST (WITH EDIT & DELETE) */}
             <h3>My Active Budgets</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {budgets.map((budget) => (
                     <div key={budget.id} style={{ border: '1px solid #eee', padding: '15px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         
                         <div>
-                            <h4 style={{ margin: '0 0 5px 0' }}>{budget.categoryName}</h4>
+                            <h4 style={{ margin: '0 0 5px 0' }}>{budget.categoryName} ({formatMonthYear(budget.monthYear)})</h4>
                             
                             {/* CONDITIONAL RENDERING FOR THE EDIT VIEW */}
                             {editingBudgetId === budget.id ? (
@@ -130,7 +138,7 @@ export default function BudgetManager({ categories }) {
                                     <button onClick={() => setEditingBudgetId(null)} style={{ marginLeft: '5px' }}>Cancel</button>
                                 </div>
                             ) : (
-                                <p style={{ margin: 0 }}>Limit: ${budget.amountLimit}</p>
+                                <p style={{ margin: 0 }}>Limit: ${budget.monthlyLimit}</p>
                             )}
                         </div>
 
@@ -140,7 +148,7 @@ export default function BudgetManager({ categories }) {
                                 <button 
                                     onClick={() => {
                                         setEditingBudgetId(budget.id);
-                                        setEditAmountLimit(budget.amountLimit); // Pre-fill the input
+                                        setEditAmountLimit(budget.monthlyLimit);
                                     }}
                                     style={{ marginRight: '10px', padding: '5px 10px', cursor: 'pointer' }}
                                 >
