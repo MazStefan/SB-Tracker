@@ -4,6 +4,7 @@ import Register from './pages/Register';
 import ChangePassword from './pages/ChangePassword';
 import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
+import './App.css';
 
 function App() {
   return (
