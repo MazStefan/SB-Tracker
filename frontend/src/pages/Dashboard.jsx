@@ -2,70 +2,89 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { authService } from '../services/authService';
-import TransactionForm from '../components/TransactionForm';
+
+import CategoryManager from '../components/CategoryManager';
+import BudgetManager from '../components/BudgetManager';
+import TransactionManager from '../components/TransactionManager';
 
 export default function Dashboard() {
-    const [budgets, setBudgets] = useState([]);
+    const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
+
     useEffect(() => {
-        const fetchBudgets = async () => {
+        const fetchCategories = async () => {
             try {
-                const response = await api.get('/budgets'); 
-                setBudgets(response.data);
-                setLoading(false);
+                const response = await api.get('/categories'); 
+                setCategories(response.data);
             } catch (err) {
-                console.error("Failed to fetch budgets:", err);
-                setError('Could not load budget data. Please try logging in again.');
+                console.error("Failed to fetch categories:", err);
+                setError('Could not load data. Please try logging in again.');
+            } finally {
                 setLoading(false);
             }
         };
 
-        fetchBudgets();
-    }, []);
+        fetchCategories();
+        
+    }, [refreshTrigger]);
 
     const handleLogout = () => {
         authService.logout();
         navigate('/login');
     };
 
+    const handlePasswordReset = () => {
+        navigate('/password');
+    };
+
     if (loading) return <p style={{ padding: '20px' }}>Loading your dashboard...</p>;
 
     return (
         <div style={{ maxWidth: '800px', margin: '40px auto', fontFamily: 'sans-serif' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2>My Budgets</h2>
+            
+            {/* --- HEADER BAR --- */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+                <h2>My Financial Dashboard</h2>
                 <button 
                     onClick={handleLogout}
                     style={{ padding: '8px 16px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
                 >
                     Logout
                 </button>
+                <button 
+                    onClick={handlePasswordReset}
+                    style={{ padding: '8px 16px', backgroundColor: '#e5fd09', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                >
+                    Reset Password
+                </button>
             </div>
 
             {error && <p style={{ color: 'red' }}>{error}</p>}
 
-            {budgets.length === 0 && !error ? (
-                <p>No budgets found. Time to create one!</p>
-            ) : (
-                <div style={{ display: 'grid', gap: '15px', marginTop: '20px' }}>
-                    {budgets.map((budget) => (
-                        <div key={budget.id} style={{ border: '1px solid #ddd', padding: '15px', borderRadius: '8px' }}>
-                            <h3 style={{ margin: '0 0 10px 0' }}>{budget.categoryName}</h3>
-                            <p style={{ margin: '0' }}>
-                                <strong>Limit:</strong> ${budget.amountLimit}
-                            </p>
-                        </div>
-                    ))}
-                </div>
-            )}
+            {/* --- THE MANAGERS --- */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '50px' }}>
+                
+                <section>
+                    <CategoryManager
+                        categories={categories} 
+                        onCategoryChange={() => setRefreshTrigger(prev => prev + 1)}
+                    />
+                </section>
+
+                <section>
+                    <BudgetManager categories={categories} />
+                </section>
+
+                <section>
+                    <TransactionManager categories={categories} />
+                </section>
+
+            </div>
             
-            <TransactionForm 
-                budgets={budgets} 
-                onTransactionAdded={() => window.location.reload()}
-            />
         </div>
     );
 }
