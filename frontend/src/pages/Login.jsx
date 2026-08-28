@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { authService } from '../services/authService';
 
 export default function Login() {
@@ -11,7 +11,7 @@ export default function Login() {
 
     const handleSubmit = async (e) => {
         e.preventDefault(); // Prevents the page from refreshing
-        setError('');       // Clear any previous errors
+        setError('');       
 
         try {
             await authService.login({ email, password });
@@ -58,6 +58,10 @@ export default function Login() {
                     Login
                 </button>
             </form>
+
+            <p style={{ marginTop: '20px' }}>
+                You don't have an account? <Link to="/register">Sign up here</Link>
+            </p>
         </div>
     );
 }
