@@ -57,7 +57,7 @@ export default function Dashboard() {
                 </button>
                 <button 
                     onClick={handlePasswordReset}
-                    style={{ padding: '8px 16px', backgroundColor: '#e5fd09', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                    style={{ padding: '8px 16px', backgroundColor: '#a50690', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
                 >
                     Reset Password
                 </button>
