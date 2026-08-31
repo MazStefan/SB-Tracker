@@ -30,8 +30,7 @@ public class CustomUserDetails implements UserDetails{
     public String getUsername() { return user.getEmail(); }
 
     public Long getId() { return user.getId(); }
-
-    // TODO: implement methods properly later
+    
     @Override
     public boolean isAccountNonExpired() {
         return true;
