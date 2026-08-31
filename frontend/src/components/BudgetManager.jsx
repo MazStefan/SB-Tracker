@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { dataService } from '../services/dataService';
 import api from '../services/api';
 
-export default function BudgetManager({ categories }) {
+export default function BudgetManager({ categories, refreshTrigger }) {
     const [budgets, setBudgets] = useState([]);
     const [newCategoryId, setNewCategoryId] = useState('');
     const [newAmountLimit, setNewAmountLimit] = useState('');
@@ -30,7 +30,7 @@ export default function BudgetManager({ categories }) {
             }
         };
         fetchBudgets();
-    }, []);
+    }, [refreshTrigger]);
 
     const handleCreate = async (e) => {
         e.preventDefault();

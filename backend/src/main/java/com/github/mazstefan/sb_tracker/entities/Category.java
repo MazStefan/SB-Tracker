@@ -1,5 +1,7 @@
 package com.github.mazstefan.sb_tracker.entities;
 
+import java.util.List;
+
 import com.github.mazstefan.sb_tracker.entities.enums.CategoryType;
 
 import jakarta.persistence.*;
@@ -22,6 +24,12 @@ public class Category {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @OneToMany(mappedBy = "category", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Transaction> transactions;
+
+    @OneToMany(mappedBy = "category", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Budget> budgets;
 
     public Long getId() { return id; }
 

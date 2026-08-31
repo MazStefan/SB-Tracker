@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { dataService } from '../services/dataService';
 import api from '../services/api';
 
-export default function TransactionManager({ categories }) {
+export default function TransactionManager({ categories, refreshTrigger }) {
     const [transactions, setTransactions] = useState([]);
     
     const [amount, setAmount] = useState('');
@@ -30,7 +30,7 @@ export default function TransactionManager({ categories }) {
             }
         };
         fetchTransactions();
-    }, []);
+    }, [refreshTrigger]);
 
     const handleCreate = async (e) => {
         e.preventDefault();
