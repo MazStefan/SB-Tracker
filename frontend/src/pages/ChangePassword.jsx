@@ -16,6 +16,11 @@ export default function ChangePassword() {
         setError('');
         setMessage('');
 
+        if (newPassword.length < 8) {
+            setError("Password must be at least 8 characters long.");
+            return;
+        }
+
         if (newPassword !== confirmNew) {
             setError("New passwords do not match!");
             return;
