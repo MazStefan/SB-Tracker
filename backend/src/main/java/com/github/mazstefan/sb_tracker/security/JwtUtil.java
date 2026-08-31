@@ -5,19 +5,20 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
-
 import java.security.Key;
 import java.util.Date;
 import java.util.function.Function;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 @Component
 public class JwtUtil {
 
-    // TODO: Move to application.properties after not hardcoded
-    private final String SECRET_KEY = "MySuperSecretKeyForBudgetTrackerAppMustBeLongEnough";
+    @Value("${jwt.secret}")
+    private String SECRET_KEY;
 
-    // 24 hours in milliseconds
-    private final long EXPIRATION_TIME = 1000 * 60 * 60 * 24;
+    @Value("${jwt.expiration}")
+    private long EXPIRATION_TIME;
 
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
