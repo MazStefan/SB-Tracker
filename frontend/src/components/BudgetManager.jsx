@@ -4,7 +4,6 @@ import api from '../services/api';
 
 export default function BudgetManager({ categories }) {
     const [budgets, setBudgets] = useState([]);
-    
     const [newCategoryId, setNewCategoryId] = useState('');
     const [newAmountLimit, setNewAmountLimit] = useState('');
     
@@ -64,9 +63,7 @@ export default function BudgetManager({ categories }) {
             const updatedBudget = await dataService.updateBudget(id, { 
                 monthlyLimit: parseFloat(editAmountLimit) 
             });
-            
             setBudgets(budgets.map(b => b.id === id ? updatedBudget : b));
-            
             setEditingBudgetId(null);
         } catch (err) {
             alert('Failed to update budget');
@@ -74,95 +71,79 @@ export default function BudgetManager({ categories }) {
     };
 
     return (
-        <div style={{ maxWidth: '600px', margin: '0 auto', fontFamily: 'sans-serif' }}>
+        <div className="flex flex-col h-full">
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4 text-center">Create New Budget</h3>
             
-            {/* 1. THE CREATE FORM */}
-            <div style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '8px', marginBottom: '30px' }}>
-                <h3>Create New Budget</h3>
-                <form onSubmit={handleCreate} style={{ display: 'flex', gap: '10px' }}>
-                    <select 
-                        value={newCategoryId} 
-                        onChange={(e) => setNewCategoryId(e.target.value)} 
-                        required
-                        style={{ padding: '8px', flex: 1 }}
-                    >
-                        <option value="" disabled>Select Category</option>
-                        {categories.map(cat => (
-                            <option key={cat.id} value={cat.id}>{cat.name}</option>
-                        ))}
-                    </select>
+            <form onSubmit={handleCreate} className="flex flex-col gap-3 mb-6">
+                <select 
+                    value={newCategoryId} 
+                    onChange={(e) => setNewCategoryId(e.target.value)} 
+                    required
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    <option value="" disabled>Select Category</option>
+                    {categories.map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
+                </select>
 
+                <div className="flex gap-2">
                     <input 
                         type="number" 
                         step="0.01"
+                        max="99999999.99"
                         placeholder="Amount Limit"
                         value={newAmountLimit}
                         onChange={(e) => setNewAmountLimit(e.target.value)} 
                         required 
-                        style={{ padding: '8px', flex: 1 }}
+                        className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
                     />
-
                     <input 
                         type="month" 
                         value={monthYear} 
                         onChange={(e) => setMonthYear(e.target.value)} 
                         required 
-                        style={{ padding: '8px', width: '150px' }}
+                        className="w-32 px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    
-                    <button type="submit" style={{ padding: '8px 16px', backgroundColor: '#007bff', color: 'white', border: 'none' }}>
-                        Add
-                    </button>
-                </form>
-            </div>
+                </div>
+                
+                <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition">
+                    Add Budget
+                </button>
+            </form>
 
-            {/* 2. THE LIST (WITH EDIT & DELETE) */}
-            <h3>My Active Budgets</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <h4 className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-3 uppercase tracking-wider text-center border-b border-slate-200 dark:border-slate-700 pb-2">My Active Budgets</h4>
+            
+            <div className="flex flex-col gap-2 overflow-y-auto max-h-64 pr-2">
                 {budgets.map((budget) => (
-                    <div key={budget.id} style={{ border: '1px solid #eee', padding: '15px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        
+                    <div key={budget.id} className="flex flex-col sm:flex-row sm:justify-between sm:items-center p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-100 dark:border-slate-600 gap-2">
                         <div>
-                            <h4 style={{ margin: '0 0 5px 0' }}>{budget.categoryName} ({formatMonthYear(budget.monthYear)})</h4>
+                            <h4 className="font-medium text-slate-800 dark:text-slate-200 m-0">{budget.categoryName} <span className="text-sm font-normal text-slate-500 dark:text-slate-400">({formatMonthYear(budget.monthYear)})</span></h4>
                             
-                            {/* CONDITIONAL RENDERING FOR THE EDIT VIEW */}
                             {editingBudgetId === budget.id ? (
-                                <div>
+                                <div className="flex gap-2 mt-2">
                                     <input 
                                         type="number" 
+                                        step="0.01"
+                                        max="99999999.99"
                                         value={editAmountLimit} 
                                         onChange={(e) => setEditAmountLimit(e.target.value)}
-                                        style={{ padding: '4px', width: '100px' }}
+                                        className="px-2 py-1 w-24 bg-white dark:bg-slate-600 border border-slate-300 dark:border-slate-500 rounded text-sm outline-none"
                                     />
-                                    <button onClick={() => handleSaveEdit(budget.id)} style={{ marginLeft: '5px', backgroundColor: '#28a745', color: 'white', border: 'none', padding: '5px' }}>Save</button>
-                                    <button onClick={() => setEditingBudgetId(null)} style={{ marginLeft: '5px' }}>Cancel</button>
+                                    <button onClick={() => handleSaveEdit(budget.id)} className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 rounded">Save</button>
+                                    <button onClick={() => setEditingBudgetId(null)} className="bg-slate-400 hover:bg-slate-500 text-white text-xs px-3 py-1 rounded">Cancel</button>
                                 </div>
                             ) : (
-                                <p style={{ margin: 0 }}>Limit: ${budget.monthlyLimit}</p>
+                                <p className="text-sm text-slate-600 dark:text-slate-400 m-0">Limit: ${budget.monthlyLimit}</p>
                             )}
                         </div>
 
-                        {/* ACTION BUTTONS */}
                         {editingBudgetId !== budget.id && (
-                            <div>
-                                <button 
-                                    onClick={() => {
-                                        setEditingBudgetId(budget.id);
-                                        setEditAmountLimit(budget.monthlyLimit);
-                                    }}
-                                    style={{ marginRight: '10px', padding: '5px 10px', cursor: 'pointer' }}
-                                >
-                                    Edit
-                                </button>
-                                <button 
-                                    onClick={() => handleDelete(budget.id)}
-                                    style={{ padding: '5px 10px', backgroundColor: '#dc3545', color: 'white', border: 'none', cursor: 'pointer' }}
-                                >
-                                    Delete
-                                </button>
+                            <div className="flex gap-2 self-start sm:self-center">
+                                <button onClick={() => { setEditingBudgetId(budget.id); setEditAmountLimit(budget.monthlyLimit); }} className="text-blue-600 dark:text-blue-400 text-sm hover:underline">Edit</button>
+                                <button onClick={() => handleDelete(budget.id)} className="text-red-600 dark:text-red-400 text-sm hover:underline">Delete</button>
                             </div>
                         )}
-                        
                     </div>
                 ))}
             </div>

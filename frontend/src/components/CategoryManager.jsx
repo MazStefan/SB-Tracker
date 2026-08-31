@@ -40,46 +40,58 @@ export default function CategoryManager({ categories, onCategoryChange }) {
     };
 
     return (
-        <div style={{ maxWidth: '600px', margin: '0 auto', fontFamily: 'sans-serif' }}>
+        <div className="flex flex-col h-full">
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4 text-center">Create New Category</h3>
+            
+            <form onSubmit={handleCreate} className="flex flex-col gap-3 mb-6">
+                <input 
+                    type="text" 
+                    placeholder="Name (e.g. Groceries)" 
+                    value={newName} 
+                    onChange={(e) => setNewName(e.target.value)} 
+                    required 
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <select 
+                    value={newType} 
+                    onChange={(e) => setNewType(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    <option value="EXPENSE">Expense</option>
+                    <option value="INCOME">Income</option>
+                </select>
+                <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition">
+                    Add Category
+                </button>
+            </form>
 
-            {/* 1. THE CREATE FORM */}
-            <div style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '8px', marginBottom: '30px' }}>
-                <h3>Create New Category</h3>
-                <form onSubmit={handleCreate} style={{ display: 'flex', gap: '10px' }}>
-                    <input type="text" placeholder="Name (e.g. Groceries)" value={newName} onChange={(e) => setNewName(e.target.value)} required style={{ padding: '8px', flex: 1 }} />
-                    <select value={newType} onChange={(e) => setNewType(e.target.value)} style={{ padding: '8px' }}>
-                        <option value="EXPENSE">Expense</option>
-                        <option value="INCOME">Income</option>
-                    </select>
-                    <button type="submit" style={{ padding: '8px 16px', backgroundColor: '#007bff', color: 'white', border: 'none' }}>Add</button>
-                </form>
-            </div>
-
-            {/* 2. THE LIST (WITH EDIT & DELETE) */}
-            <h3>My Categories</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <h4 className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-3 uppercase tracking-wider text-center border-b border-slate-200 dark:border-slate-700 pb-2">My Categories</h4>
+            
+            <div className="flex flex-col gap-2 overflow-y-auto max-h-64 pr-2">
                 {categories.map((cat) => (
-                    <div key={cat.id} style={{ border: '1px solid #eee', padding: '15px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between' }}>
-                        <div>
-
-                            {/* CONDITIONAL RENDERING FOR THE EDIT VIEW */}
-                            {editingId === cat.id ? (
-                                <div>
-                                    <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} style={{ padding: '4px' }}/>
-                                    <button onClick={() => handleSaveEdit(cat.id, cat.type)} style={{ marginLeft: '5px', backgroundColor: '#28a745', color: 'white', border: 'none' }}>Save</button>
-                                    <button onClick={() => setEditingId(null)} style={{ marginLeft: '5px' }}>Cancel</button>
-                                </div>
-                            ) : (
-                                <strong>{cat.name} ({cat.type})</strong>
-                            )}
-                        </div>
-
-                        {/* ACTION BUTTONS */}
-                        {editingId !== cat.id && (
-                            <div>
-                                <button onClick={() => { setEditingId(cat.id); setEditName(cat.name); }} style={{ marginRight: '10px' }}>Edit</button>
-                                <button onClick={() => handleDelete(cat.id)} style={{ backgroundColor: '#dc3545', color: 'white', border: 'none' }}>Delete</button>
+                    <div key={cat.id} className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-100 dark:border-slate-600">
+                        {editingId === cat.id ? (
+                            <div className="flex flex-1 gap-2">
+                                <input 
+                                    type="text" 
+                                    value={editName} 
+                                    onChange={(e) => setEditName(e.target.value)} 
+                                    className="px-2 py-1 flex-1 bg-white dark:bg-slate-600 border border-slate-300 dark:border-slate-500 rounded text-sm outline-none"
+                                />
+                                <button onClick={() => handleSaveEdit(cat.id, cat.type)} className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 rounded">Save</button>
+                                <button onClick={() => setEditingId(null)} className="bg-slate-400 hover:bg-slate-500 text-white text-xs px-3 py-1 rounded">Cancel</button>
                             </div>
+                        ) : (
+                            <>
+                                <div>
+                                    <span className="text-slate-700 dark:text-slate-200 font-medium block">{cat.name}</span>
+                                    <span className="text-xs text-slate-500 dark:text-slate-400">{cat.type}</span>
+                                </div>
+                                <div className="flex gap-2">
+                                    <button onClick={() => { setEditingId(cat.id); setEditName(cat.name); }} className="text-blue-600 dark:text-blue-400 text-sm hover:underline">Edit</button>
+                                    <button onClick={() => handleDelete(cat.id)} className="text-red-600 dark:text-red-400 text-sm hover:underline">Delete</button>
+                                </div>
+                            </>
                         )}
                     </div>
                 ))}
