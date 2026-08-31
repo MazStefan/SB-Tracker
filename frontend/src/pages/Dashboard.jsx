@@ -41,50 +41,72 @@ export default function Dashboard() {
         navigate('/password');
     };
 
-    if (loading) return <p style={{ padding: '20px' }}>Loading your dashboard...</p>;
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+                <p className="text-lg text-slate-600 dark:text-slate-400 animate-pulse">Loading your dashboard...</p>
+            </div>
+        );
+    }
 
     return (
-        <div style={{ maxWidth: '800px', margin: '40px auto', fontFamily: 'sans-serif' }}>
-            
-            {/* --- HEADER BAR --- */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-                <h2>My Financial Dashboard</h2>
-                <button 
-                    onClick={handleLogout}
-                    style={{ padding: '8px 16px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                >
-                    Logout
-                </button>
-                <button 
-                    onClick={handlePasswordReset}
-                    style={{ padding: '8px 16px', backgroundColor: '#a50690', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                >
-                    Reset Password
-                </button>
-            </div>
-
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-
-            {/* --- THE MANAGERS --- */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '50px' }}>
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-200">
+            <div className="max-w-7xl mx-auto space-y-8">
                 
-                <section>
-                    <CategoryManager
-                        categories={categories} 
-                        onCategoryChange={() => setRefreshTrigger(prev => prev + 1)}
-                    />
-                </section>
+                {/* HEADER SECTION */}
+                <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 transition-colors duration-200">
+                    <div>
+                        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">My Financial Dashboard</h1>
+                        <p className="text-slate-500 dark:text-slate-400 mt-1">Manage your budget and track your spending.</p>
+                    </div>
+                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                        <button
+                            onClick={handlePasswordReset} 
+                            className="flex-1 sm:flex-none text-center px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition duration-200"
+                        >
+                            Settings
+                        </button>
+                        <button 
+                            onClick={handleLogout} 
+                            className="flex-1 sm:flex-none px-4 py-2.5 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition duration-200 shadow-sm"
+                        >
+                            Logout
+                        </button>
+                    </div>
+                </header>
 
-                <section>
-                    <BudgetManager categories={categories} />
-                </section>
+                {error && (
+                    <div className="p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm">
+                        {error}
+                    </div>
+                )}
 
-                <section>
-                    <TransactionManager categories={categories} />
-                </section>
+                {/* MAIN CONTENT GRID */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    
+                    {/* LEFT COLUMN: Categories & Budgets */}
+                    <div className="lg:col-span-1 space-y-8">
+                        <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 transition-colors duration-200">
+                            <CategoryManager 
+                                categories={categories} 
+                                onCategoryChange={() => setRefreshTrigger(prev => prev + 1)} 
+                            />
+                        </section>
 
+                        <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 transition-colors duration-200">
+                            <BudgetManager categories={categories} />
+                        </section>
+                    </div>
+
+                    {/* RIGHT COLUMN: Transactions */}
+                    <div className="lg:col-span-2">
+                        <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 h-full transition-colors duration-200">
+                            <TransactionManager categories={categories} />
+                        </section>
+                    </div>
+
+                </div>
             </div>
-            
         </div>
     );
 }
