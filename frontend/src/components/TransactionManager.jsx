@@ -11,6 +11,10 @@ export default function TransactionManager({ categories, refreshTrigger }) {
     const [warning, setWarning] = useState('');
 
     const [editTransactionId, setEditTranasactionId] = useState(null);
+    const [editAmount, setEditAmount] = useState('');
+    const [editDescription, setEditDescription] = useState('');
+    const [editCategoryId, setEditCategoryId] = useState('');
+    const [editDate, setEditDate] = useState('');
 
     const getLocalIsoString = () => {
         const now = new Date();
@@ -68,9 +72,10 @@ export default function TransactionManager({ categories, refreshTrigger }) {
     const handleSaveEdit = async(id) => {
         try{
             const updatedTransaction = await dataService.updateTransaction(id, {
-                amount: parseFloat(amount),
-                description,
-                categoryId: parseInt(categoryId)
+                amount: parseFloat(editAmount),
+                description: editDescription,
+                categoryId: parseInt(editCategoryId),
+                date: `${editDate}:00`
             });
 
             setTransactions(transactions.map(t => t.id === id ? updatedTransaction : t));
@@ -146,11 +151,11 @@ export default function TransactionManager({ categories, refreshTrigger }) {
                     <div key={t.id} className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl border border-slate-100 dark:border-slate-600">
                         {editTransactionId === t.id ? (
                             <div className="flex flex-col gap-3">
-                                <div className="grid grid-cols-2 gap-2">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                     <select 
-                                        value={categoryId} 
-                                        onChange={(e) => setCategoryId(e.target.value)} 
-                                        className="px-2 py-1.5 bg-white dark:bg-slate-600 border border-slate-300 dark:border-slate-500 rounded text-sm outline-none"
+                                        value={editCategoryId} 
+                                        onChange={(e) => setEditCategoryId(e.target.value)} 
+                                        className="px-2 py-1.5 bg-white dark:bg-slate-600 border border-slate-300 dark:border-slate-500 rounded text-sm outline-none text-slate-900 dark:text-white"
                                     >
                                         <option value="" disabled>Category</option>
                                         {categories.map(cat => (
@@ -161,25 +166,28 @@ export default function TransactionManager({ categories, refreshTrigger }) {
                                         type="number" 
                                         step="0.01" 
                                         max="99999999.99"
-                                        value={amount} 
-                                        onChange={(e) => setAmount(e.target.value)} 
-                                        className="px-2 py-1.5 bg-white dark:bg-slate-600 border border-slate-300 dark:border-slate-500 rounded text-sm outline-none" 
+                                        value={editAmount} 
+                                        onChange={(e) => setEditAmount(e.target.value)} 
+                                        className="px-2 py-1.5 bg-white dark:bg-slate-600 border border-slate-300 dark:border-slate-500 rounded text-sm outline-none text-slate-900 dark:text-white" 
                                     />
                                 </div>
-                                <input 
-                                    type="text" 
-                                    value={description} 
-                                    onChange={(e) => setDescription(e.target.value)} 
-                                    className="px-2 py-1.5 bg-white dark:bg-slate-600 border border-slate-300 dark:border-slate-500 rounded text-sm outline-none w-full" 
-                                />
-                                <div className="flex gap-2">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <input 
+                                        type="text" 
+                                        value={editDescription} 
+                                        onChange={(e) => setEditDescription(e.target.value)} 
+                                        className="px-2 py-1.5 bg-white dark:bg-slate-600 border border-slate-300 dark:border-slate-500 rounded text-sm outline-none text-slate-900 dark:text-white w-full" 
+                                    />
+                                    <input 
+                                        type="datetime-local"
+                                        value={editDate}
+                                        onChange={(e) => setEditDate(e.target.value)}
+                                        className="px-2 py-1.5 bg-white dark:bg-slate-600 border border-slate-300 dark:border-slate-500 rounded text-sm outline-none text-slate-900 dark:text-white w-full"
+                                    />
+                                </div>
+                                <div className="flex gap-2 mt-1">
                                     <button onClick={() => handleSaveEdit(t.id)} className="bg-green-600 hover:bg-green-700 text-white text-xs px-4 py-2 rounded">Save</button>
-                                    <button onClick={() => {
-                                        setEditTranasactionId(null);
-                                        setAmount('');
-                                        setDescription('');
-                                        setCategoryId('');
-                                    }} className="bg-slate-400 hover:bg-slate-500 text-white text-xs px-4 py-2 rounded">Cancel</button>
+                                    <button onClick={() => setEditTranasactionId(null)} className="bg-slate-400 hover:bg-slate-500 text-white text-xs px-4 py-2 rounded">Cancel</button>
                                 </div>
                             </div>
                         ) : (
@@ -197,9 +205,10 @@ export default function TransactionManager({ categories, refreshTrigger }) {
                                     <button 
                                         onClick={() => {
                                             setEditTranasactionId(t.id);
-                                            setAmount(t.amount);
-                                            setDescription(t.description);
-                                            setCategoryId(t.categoryId || '');
+                                            setEditAmount(t.amount);
+                                            setEditDescription(t.description);
+                                            setEditCategoryId(t.categoryId || categories.find(c => c.name === t.categoryName)?.id || '');
+                                            setEditDate(t.date ? getLocalIsoString(t.date) : getLocalIsoString());
                                         }} 
                                         className="text-blue-600 dark:text-blue-400 text-sm hover:underline font-medium"
                                     >

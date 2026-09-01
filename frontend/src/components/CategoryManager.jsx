@@ -7,6 +7,7 @@ export default function CategoryManager({ categories, onCategoryChange }) {
     
     const [editingId, setEditingId] = useState(null);
     const [editName, setEditName] = useState('');
+    const [editType, setEditType] = useState('EXPENSE');
 
     const handleCreate = async (e) => {
         e.preventDefault();
@@ -29,9 +30,9 @@ export default function CategoryManager({ categories, onCategoryChange }) {
         }
     };
 
-    const handleSaveEdit = async (id, currentType) => {
+    const handleSaveEdit = async (id) => {
         try {
-            await dataService.updateCategory(id, { name: editName, type: currentType });
+            await dataService.updateCategory(id, { name: editName, type: editType });
             setEditingId(null);
             if (onCategoryChange) onCategoryChange();
         } catch (err) {
@@ -78,7 +79,15 @@ export default function CategoryManager({ categories, onCategoryChange }) {
                                     onChange={(e) => setEditName(e.target.value)} 
                                     className="px-2 py-1 flex-1 bg-white dark:bg-slate-600 border border-slate-300 dark:border-slate-500 rounded text-sm outline-none"
                                 />
-                                <button onClick={() => handleSaveEdit(cat.id, cat.type)} className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 rounded">Save</button>
+                                <select 
+                                    value={editType} 
+                                    onChange={(e) => setEditType(e.target.value)}
+                                    className="px-2 py-1 bg-white dark:bg-slate-600 border border-slate-300 dark:border-slate-500 rounded text-sm outline-none text-slate-900 dark:text-white"
+                                >
+                                    <option value="EXPENSE">Expense</option>
+                                    <option value="INCOME">Income</option>
+                                </select>
+                                <button onClick={() => handleSaveEdit(cat.id)} className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 rounded">Save</button>
                                 <button onClick={() => setEditingId(null)} className="bg-slate-400 hover:bg-slate-500 text-white text-xs px-3 py-1 rounded">Cancel</button>
                             </div>
                         ) : (
@@ -88,7 +97,7 @@ export default function CategoryManager({ categories, onCategoryChange }) {
                                     <span className="text-xs text-slate-500 dark:text-slate-400">{cat.type}</span>
                                 </div>
                                 <div className="flex gap-2">
-                                    <button onClick={() => { setEditingId(cat.id); setEditName(cat.name); }} className="text-blue-600 dark:text-blue-400 text-sm hover:underline">Edit</button>
+                                    <button onClick={() => { setEditingId(cat.id); setEditName(cat.name); setEditType(cat.type) }} className="text-blue-600 dark:text-blue-400 text-sm hover:underline">Edit</button>
                                     <button onClick={() => handleDelete(cat.id)} className="text-red-600 dark:text-red-400 text-sm hover:underline">Delete</button>
                                 </div>
                             </>
