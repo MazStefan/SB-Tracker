@@ -33,7 +33,7 @@ export default function CategoryManager({ categories, onCategoryChange }) {
             await dataService.deleteCategory(id);
             if (onCategoryChange) onCategoryChange();
         } catch (err) {
-            const errorMessage = err.response.data.error || 'Failed to create category';
+            const errorMessage = err.response.data.error || 'Failed to delete category';
             setError(errorMessage);
         }
     };
@@ -46,7 +46,7 @@ export default function CategoryManager({ categories, onCategoryChange }) {
             setEditingId(null);
             if (onCategoryChange) onCategoryChange();
         } catch (err) {
-            const errorMessage = err.response.data.error || 'Failed to create category';
+            const errorMessage = err.response.data.error || 'Failed to update category';
             setError(errorMessage);
         }
     };
