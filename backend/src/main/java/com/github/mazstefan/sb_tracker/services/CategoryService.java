@@ -54,6 +54,10 @@ public class CategoryService {
         Category existingCategory = categoryRepository.findByIdAndUserId(categoryId, userId)
                 .orElseThrow(() -> new RuntimeException("Category not found"));
 
+        if (categoryRepository.existsByUserIdAndNameAndTypeAndIdNot(userId, requestDTO.getName(), requestDTO.getType(), categoryId)) {
+            throw new RuntimeException("A category with this name and type already exists.");
+        }
+
         existingCategory.setName(requestDTO.getName());
         existingCategory.setType(requestDTO.getType());
 
