@@ -6,6 +6,8 @@ import com.github.mazstefan.sb_tracker.entities.Category;
 import com.github.mazstefan.sb_tracker.entities.User;
 import com.github.mazstefan.sb_tracker.repositories.CategoryRepository;
 import com.github.mazstefan.sb_tracker.repositories.UserRepository;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,6 +27,10 @@ public class CategoryService {
     public CategoryResponseDTO createCategory(CategoryRequestDTO requestDTO, Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (categoryRepository.existsByUserIdAndNameAndType(userId, requestDTO.getName(), requestDTO.getType())) {
+            throw new RuntimeException("A category with this name and type already exists.");
+        }
 
         Category category = new Category();
         category.setName(requestDTO.getName());

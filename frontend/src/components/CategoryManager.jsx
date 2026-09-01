@@ -9,40 +9,57 @@ export default function CategoryManager({ categories, onCategoryChange }) {
     const [editName, setEditName] = useState('');
     const [editType, setEditType] = useState('EXPENSE');
 
+    const [error, setError] = useState('');
+
     const handleCreate = async (e) => {
         e.preventDefault();
+        setError('');
+
         try {
             await dataService.createCategory({ name: newName, type: newType });
             setNewName('');
             if (onCategoryChange) onCategoryChange();
         } catch (err) {
-            alert('Failed to create category');
+            const errorMessage = err.response.data.error || 'Failed to create category';
+            setError(errorMessage);
         }
     };
 
     const handleDelete = async (id) => {
+        setError('');
+
         if (!window.confirm("Delete this category?")) return;
         try {
             await dataService.deleteCategory(id);
             if (onCategoryChange) onCategoryChange();
         } catch (err) {
-            alert('Failed to delete category');
+            const errorMessage = err.response.data.error || 'Failed to create category';
+            setError(errorMessage);
         }
     };
 
     const handleSaveEdit = async (id) => {
+        setError('');
+
         try {
             await dataService.updateCategory(id, { name: editName, type: editType });
             setEditingId(null);
             if (onCategoryChange) onCategoryChange();
         } catch (err) {
-            alert('Failed to update category');
+            const errorMessage = err.response.data.error || 'Failed to create category';
+            setError(errorMessage);
         }
     };
 
     return (
         <div className="flex flex-col h-full">
             <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4 text-center">Create New Category</h3>
+
+            {error && (
+                <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-sm font-medium rounded-lg border border-red-200 dark:border-red-800">
+                    {error}
+                </div>
+            )}
             
             <form onSubmit={handleCreate} className="flex flex-col gap-3 mb-6">
                 <input 

@@ -7,7 +7,9 @@ import com.github.mazstefan.sb_tracker.entities.enums.CategoryType;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "categories")
+@Table(name = "categories", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"user_id", "name", "type"})
+})
 public class Category {
     
     @Id
