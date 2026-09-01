@@ -28,4 +28,6 @@ public interface BudgetRepository extends JpaRepository<Budget, Long> {
         @Param("month") int month, 
         @Param("year") int year
     );
+
+    boolean existsByUserIdAndCategoryIdAndMonthYearAndIdNot(Long userId, Long categoryId, LocalDate monthYear, Long id);
 }

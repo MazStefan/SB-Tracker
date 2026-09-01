@@ -69,6 +69,10 @@ public class BudgetService {
 
         Category category = categoryRepository.findByIdAndUserId(requestDTO.getCategoryId(), userId)
                 .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        if (budgetRepository.existsByUserIdAndCategoryIdAndMonthYearAndIdNot(userId, requestDTO.getCategoryId(), requestDTO.getMonthYear(), budgetId)) {
+            throw new RuntimeException("A budget for this category and month already exists!");
+        } 
         
         existingBudget.setMonthlyLimit(requestDTO.getMonthlyLimit());
         existingBudget.setMonthYear(requestDTO.getMonthYear());

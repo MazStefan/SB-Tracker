@@ -15,6 +15,8 @@ export default function BudgetManager({ categories, refreshTrigger }) {
     const currentMonth = new Date().toISOString().slice(0, 7); 
     const [monthYear, setMonthYear] = useState(currentMonth);
 
+    const [error, setError] = useState('');
+
     const formatMonthYear = (dateString) => {
         if (!dateString) return '';
         const [year, month] = dateString.split('-'); 
@@ -36,6 +38,8 @@ export default function BudgetManager({ categories, refreshTrigger }) {
 
     const handleCreate = async (e) => {
         e.preventDefault();
+        setError('');
+
         try {
             const newBudget = await dataService.createBudget({
                 categoryId: parseInt(newCategoryId),
@@ -46,7 +50,8 @@ export default function BudgetManager({ categories, refreshTrigger }) {
             setNewCategoryId('');
             setNewAmountLimit('');
         } catch (err) {
-            alert('Failed to create budget');
+           const errorMessage = err.response.data.error || 'Failed to create budget';
+            setError(errorMessage);
         }
     };
 
@@ -56,7 +61,8 @@ export default function BudgetManager({ categories, refreshTrigger }) {
             await dataService.deleteBudget(id);
             setBudgets(budgets.filter(b => b.id !== id));
         } catch (err) {
-            alert('Failed to delete budget');
+            const errorMessage = err.response.data.error || 'Failed to delete budget';
+            setError(errorMessage);
         }
     };
 
@@ -70,7 +76,8 @@ export default function BudgetManager({ categories, refreshTrigger }) {
             setBudgets(budgets.map(b => b.id === id ? updatedBudget : b));
             setEditingBudgetId(null);
         } catch (err) {
-            alert('Failed to update budget');
+            const errorMessage = err.response.data.error || 'Failed to update budget';
+            setError(errorMessage);
         }
     };
 
@@ -78,6 +85,12 @@ export default function BudgetManager({ categories, refreshTrigger }) {
         <div className="flex flex-col h-full">
             <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4 text-center">Create New Budget</h3>
             
+            {error && (
+                <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-sm font-medium rounded-lg border border-red-200 dark:border-red-800">
+                    {error}
+                </div>
+            )}
+
             <form onSubmit={handleCreate} className="flex flex-col gap-3 mb-6">
                 <select 
                     value={newCategoryId} 
