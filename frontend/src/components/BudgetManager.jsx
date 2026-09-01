@@ -141,24 +141,26 @@ export default function BudgetManager({ categories, refreshTrigger }) {
                                 <h4 className="font-medium text-slate-800 dark:text-slate-200 m-0">{budget.categoryName} <span className="text-sm font-normal text-slate-500 dark:text-slate-400">({formatMonthYear(budget.monthYear)})</span></h4>
                                 
                                 {editingBudgetId === budget.id ? (
-                                    <div className="flex flex-col sm:flex-row gap-2 mt-2">
-                                        <input 
-                                            type="number" 
-                                            step="0.01"
-                                            max="99999999.99"
-                                            value={editAmountLimit} 
-                                            onChange={(e) => setEditAmountLimit(e.target.value)}
-                                            className="px-2 py-1 w-full sm:w-28 bg-white dark:bg-slate-600 border border-slate-300 dark:border-slate-500 rounded text-sm outline-none text-slate-900 dark:text-white"
-                                        />
-                                        <input 
-                                            type="month"
-                                            value={editMonthYear}
-                                            onChange={(e) => setEditMonthYear(e.target.value)}
-                                            className="px-2 py-1 bg-white dark:bg-slate-600 border border-slate-300 dark:border-slate-500 rounded text-sm outline-none text-slate-900 dark:text-white"
-                                        />
-                                        <div className="flex gap-1">
-                                            <button onClick={() => handleSaveEdit(budget.id)} className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 rounded">Save</button>
-                                            <button onClick={() => setEditingBudgetId(null)} className="bg-slate-400 hover:bg-slate-500 text-white text-xs px-3 py-1 rounded">Cancel</button>
+                                    <div className="flex flex-col w-full gap-2 mt-2">
+                                        <div className="flex gap-2">
+                                            <input 
+                                                type="number" 
+                                                step="0.01"
+                                                max="99999999.99"
+                                                value={editAmountLimit} 
+                                                onChange={(e) => setEditAmountLimit(e.target.value)}
+                                                className="px-2 py-1.5 w-1/2 bg-white dark:bg-slate-600 border border-slate-300 dark:border-slate-500 rounded text-sm outline-none text-slate-900 dark:text-white"
+                                            />
+                                            <input 
+                                                type="month"
+                                                value={editMonthYear}
+                                                onChange={(e) => setEditMonthYear(e.target.value)}
+                                                className="px-2 py-1.5 w-1/2 bg-white dark:bg-slate-600 border border-slate-300 dark:border-slate-500 rounded text-sm outline-none text-slate-900 dark:text-white"
+                                            />
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <button onClick={() => handleSaveEdit(budget.id)} className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-2 rounded font-medium transition">Save</button>
+                                            <button onClick={() => setEditingBudgetId(null)} className="flex-1 bg-slate-400 hover:bg-slate-500 text-white text-xs px-3 py-2 rounded font-medium transition">Cancel</button>
                                         </div>
                                     </div>
                                 ) : (

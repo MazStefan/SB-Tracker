@@ -105,7 +105,7 @@ export default function TransactionManager({ categories, refreshTrigger }) {
                     >
                         <option value="" disabled>Select Category</option>
                         {categories.map(cat => (
-                            <option key={cat.id} value={cat.id}>{cat.name}</option>
+                            <option key={cat.id} value={cat.id}>{cat.name}({cat.type})</option>
                         ))}
                     </select>
                     
@@ -159,7 +159,7 @@ export default function TransactionManager({ categories, refreshTrigger }) {
                                     >
                                         <option value="" disabled>Category</option>
                                         {categories.map(cat => (
-                                            <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                            <option key={cat.id} value={cat.id}>{cat.name}({cat.type})</option>
                                         ))}
                                     </select>
                                     <input 

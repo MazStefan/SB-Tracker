@@ -89,23 +89,25 @@ export default function CategoryManager({ categories, onCategoryChange }) {
                 {categories.map((cat) => (
                     <div key={cat.id} className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-100 dark:border-slate-600">
                         {editingId === cat.id ? (
-                            <div className="flex flex-1 gap-2">
+                            <div className="flex flex-col w-full gap-2 mt-1">
                                 <input 
                                     type="text" 
                                     value={editName} 
                                     onChange={(e) => setEditName(e.target.value)} 
-                                    className="px-2 py-1 flex-1 bg-white dark:bg-slate-600 border border-slate-300 dark:border-slate-500 rounded text-sm outline-none"
+                                    className="px-2 py-1.5 w-full bg-white dark:bg-slate-600 border border-slate-300 dark:border-slate-500 rounded text-sm outline-none text-slate-900 dark:text-white"
                                 />
                                 <select 
                                     value={editType} 
                                     onChange={(e) => setEditType(e.target.value)}
-                                    className="px-2 py-1 bg-white dark:bg-slate-600 border border-slate-300 dark:border-slate-500 rounded text-sm outline-none text-slate-900 dark:text-white"
+                                    className="px-2 py-1.5 w-full bg-white dark:bg-slate-600 border border-slate-300 dark:border-slate-500 rounded text-sm outline-none text-slate-900 dark:text-white"
                                 >
                                     <option value="EXPENSE">Expense</option>
                                     <option value="INCOME">Income</option>
                                 </select>
-                                <button onClick={() => handleSaveEdit(cat.id)} className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 rounded">Save</button>
-                                <button onClick={() => setEditingId(null)} className="bg-slate-400 hover:bg-slate-500 text-white text-xs px-3 py-1 rounded">Cancel</button>
+                                <div className="flex gap-2">
+                                    <button onClick={() => handleSaveEdit(cat.id)} className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-2 rounded font-medium transition">Save</button>
+                                    <button onClick={() => setEditingId(null)} className="flex-1 bg-slate-400 hover:bg-slate-500 text-white text-xs px-3 py-2 rounded font-medium transition">Cancel</button>
+                                </div>
                             </div>
                         ) : (
                             <>
