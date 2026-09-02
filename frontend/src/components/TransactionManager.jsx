@@ -17,6 +17,7 @@ export default function TransactionManager({ categories, refreshTrigger }) {
     const [editDate, setEditDate] = useState('');
 
     const [error, setError] = useState('');
+    const [deletingTransactionId, setDeletingTransactionId] = useState(null);
 
     const getLocalIsoString = () => {
         const now = new Date();
@@ -64,10 +65,11 @@ export default function TransactionManager({ categories, refreshTrigger }) {
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm("Delete this transaction?")) return;
+
         try {
             await dataService.deleteTransaction(id);
             setTransactions(transactions.filter(t => t.id !== id));
+            setDeletingTransactionId(null);
         } catch (err) {
             const errorMessage = err.response.data.error || 'Failed to delete transaction';
             setError(errorMessage);
@@ -228,21 +230,36 @@ export default function TransactionManager({ categories, refreshTrigger }) {
                                     </div>
                                 </div>
                                 <div className="flex gap-3 sm:justify-end">
-                                    <button 
-                                        onClick={() => {
-                                            setEditTranasactionId(t.id);
-                                            setEditAmount(t.amount);
-                                            setEditDescription(t.description);
-                                            setEditCategoryId(t.categoryId || categories.find(c => c.name === t.categoryName)?.id || '');
-                                            setEditDate(t.date ? getLocalIsoString(t.date) : getLocalIsoString());
-                                        }} 
-                                        className="text-blue-600 dark:text-blue-400 text-sm hover:underline font-medium"
-                                    >
-                                        Edit
-                                    </button>
-                                    <button onClick={() => handleDelete(t.id)} className="text-red-600 dark:text-red-400 text-sm hover:underline font-medium">
-                                        Delete
-                                    </button>
+                                    {deletingTransactionId === t.id ? (
+                                        <div className="flex items-center gap-2 animate-pulse">
+                                            <span className="text-xs text-slate-500 dark:text-slate-400 italic">Sure?</span>
+                                            <button onClick={() => handleDelete(t.id)} className="text-red-600 dark:text-red-400 text-sm font-bold hover:underline">
+                                                Yes
+                                            </button>
+                                            <span className="text-slate-300 dark:text-slate-600 text-sm">|</span>
+                                            <button onClick={() => setDeletingTransactionId(null)} className="text-slate-600 dark:text-slate-400 text-sm hover:underline">
+                                                No
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <button 
+                                                onClick={() => {
+                                                    setEditTranasactionId(t.id);
+                                                    setEditAmount(t.amount);
+                                                    setEditDescription(t.description);
+                                                    setEditCategoryId(t.categoryId || categories.find(c => c.name === t.categoryName)?.id || '');
+                                                    setEditDate(t.date ? getLocalIsoString(t.date) : getLocalIsoString());
+                                                }} 
+                                                className="text-blue-600 dark:text-blue-400 text-sm hover:underline font-medium"
+                                            >
+                                                Edit
+                                            </button>
+                                            <button onClick={() => setDeletingTransactionId(t.id)} className="text-red-600 dark:text-red-400 text-sm hover:underline font-medium">
+                                                Delete
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         )}

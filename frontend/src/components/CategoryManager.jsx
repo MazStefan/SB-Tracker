@@ -10,6 +10,7 @@ export default function CategoryManager({ categories, onCategoryChange }) {
     const [editType, setEditType] = useState('EXPENSE');
 
     const [error, setError] = useState('');
+    const [deletingCategoryId, setDeletingCategoryId] = useState(null);
 
     const handleCreate = async (e) => {
         e.preventDefault();
@@ -28,10 +29,10 @@ export default function CategoryManager({ categories, onCategoryChange }) {
     const handleDelete = async (id) => {
         setError('');
 
-        if (!window.confirm("Delete this category?")) return;
         try {
             await dataService.deleteCategory(id);
             if (onCategoryChange) onCategoryChange();
+            setDeletingCategoryId(null);
         } catch (err) {
             const errorMessage = err.response.data.error || 'Failed to delete category';
             setError(errorMessage);
@@ -124,8 +125,23 @@ export default function CategoryManager({ categories, onCategoryChange }) {
                                     <span className="text-xs text-slate-500 dark:text-slate-400">{cat.type}</span>
                                 </div>
                                 <div className="flex gap-2">
-                                    <button onClick={() => { setEditingId(cat.id); setEditName(cat.name); setEditType(cat.type) }} className="text-blue-600 dark:text-blue-400 text-sm hover:underline">Edit</button>
-                                    <button onClick={() => handleDelete(cat.id)} className="text-red-600 dark:text-red-400 text-sm hover:underline">Delete</button>
+                                    {deletingCategoryId === cat.id ? (
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs text-slate-500 dark:text-slate-400 italic">Sure?</span>
+                                            <button onClick={() => handleDelete(cat.id)} className="text-red-600 dark:text-red-400 text-sm font-bold hover:underline">
+                                                Yes
+                                            </button>
+                                            <span className="text-slate-300 dark:text-slate-600 text-sm">|</span>
+                                            <button onClick={() => setDeletingCategoryId(null)} className="text-slate-600 dark:text-slate-400 text-sm hover:underline">
+                                                No
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <button onClick={() => { setEditingId(cat.id); setEditName(cat.name); setEditType(cat.type); }} className="text-blue-600 dark:text-blue-400 text-sm hover:underline">Edit</button>
+                                            <button onClick={() => setDeletingCategoryId(cat.id)} className="text-red-600 dark:text-red-400 text-sm hover:underline">Delete</button>
+                                        </>
+                                    )}
                                 </div>
                             </>
                         )}

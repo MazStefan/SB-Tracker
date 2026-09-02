@@ -16,6 +16,7 @@ export default function BudgetManager({ categories, refreshTrigger }) {
     const [monthYear, setMonthYear] = useState(currentMonth);
 
     const [error, setError] = useState('');
+    const [deletingBudgetId, setDeletingBudgetId] = useState(null);
 
     const formatMonthYear = (dateString) => {
         if (!dateString) return '';
@@ -56,10 +57,11 @@ export default function BudgetManager({ categories, refreshTrigger }) {
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm("Delete this budget?")) return;
+        
         try {
             await dataService.deleteBudget(id);
             setBudgets(budgets.filter(b => b.id !== id));
+            setDeletingBudgetId(null);
         } catch (err) {
             const errorMessage = err.response.data.error || 'Failed to delete budget';
             setError(errorMessage);
@@ -178,13 +180,38 @@ export default function BudgetManager({ categories, refreshTrigger }) {
 
                             {editingBudgetId !== budget.id && (
                                 <div className="flex gap-2 self-start sm:self-center">
-                                    <button onClick={() => {
-                                        setEditingBudgetId(budget.id); 
-                                        setEditAmountLimit(budget.monthlyLimit); 
-                                        setEditMonthYear(rawMonth); 
-                                        setEditCategoryId(budget.categoryId || categories.find(c => c.name === budget.categoryName)?.id || '');
-                                        }} className="text-blue-600 dark:text-blue-400 text-sm hover:underline">Edit</button>
-                                    <button onClick={() => handleDelete(budget.id)} className="text-red-600 dark:text-red-400 text-sm hover:underline">Delete</button>
+                                    {deletingBudgetId === budget.id ? (
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs text-slate-500 dark:text-slate-400 italic">Sure?</span>
+                                            <button onClick={() => handleDelete(budget.id)} className="text-red-600 dark:text-red-400 text-sm font-bold hover:underline">
+                                                Yes
+                                            </button>
+                                            <span className="text-slate-300 dark:text-slate-600 text-sm">|</span>
+                                            <button onClick={() => setDeletingBudgetId(null)} className="text-slate-600 dark:text-slate-400 text-sm hover:underline">
+                                                No
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <button 
+                                                onClick={() => { 
+                                                    setEditingBudgetId(budget.id); 
+                                                    setEditAmountLimit(budget.monthlyLimit); 
+                                                    setEditMonthYear(rawMonth); 
+                                                    setEditCategoryId(budget.categoryId || categories.find(c => c.name === budget.categoryName)?.id || '');
+                                                }} 
+                                                className="text-blue-600 dark:text-blue-400 text-sm hover:underline"
+                                            >
+                                                Edit
+                                            </button>
+                                            <button 
+                                                onClick={() => setDeletingBudgetId(budget.id)} 
+                                                className="text-red-600 dark:text-red-400 text-sm hover:underline"
+                                            >
+                                                Delete
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
                             )}
                         </div>
