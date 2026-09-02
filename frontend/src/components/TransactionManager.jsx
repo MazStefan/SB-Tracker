@@ -39,6 +39,7 @@ export default function TransactionManager({ categories, refreshTrigger }) {
     const handleCreate = async (e) => {
         e.preventDefault();
         setWarning('');
+        
         try {
             const response = await dataService.createTransaction({
                 amount: parseFloat(amount),
@@ -48,7 +49,7 @@ export default function TransactionManager({ categories, refreshTrigger }) {
             });
 
             if (response.overSpend) {
-                setWarning('⚠️ Transaction added, but you have exceeded your budget!');
+                setWarning('⚠️ Transaction edited, but you have exceeded your budget!');
             }
 
             setTransactions([response, ...transactions]);
@@ -77,6 +78,10 @@ export default function TransactionManager({ categories, refreshTrigger }) {
                 categoryId: parseInt(editCategoryId),
                 date: `${editDate}:00`
             });
+
+            if (updatedTransaction.overSpend) {
+                setWarning('⚠️ Transaction edited, but you have exceeded your budget!');
+            }
 
             setTransactions(transactions.map(t => t.id === id ? updatedTransaction : t));
             setEditTranasactionId(null);

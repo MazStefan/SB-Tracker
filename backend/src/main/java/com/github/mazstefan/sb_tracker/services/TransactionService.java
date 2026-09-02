@@ -83,13 +83,25 @@ public class TransactionService {
         return mapToResponseDTO(transaction);
     }
 
-    public TransactionResponseDTO updateTransaction(TransactionRequestDTO requestDTO, Long transactionId, Long userId) {
+    public TransactionCreatedDTO updateTransaction(TransactionRequestDTO requestDTO, Long transactionId, Long userId) {
         Transaction existingTransaction = transactionRepository.findByIdAndUserId(transactionId, userId)
                 .orElseThrow(() -> new RuntimeException("Transaction not found"));
 
         Category category = categoryRepository.findByIdAndUserId(requestDTO.getCategoryId(), userId)
                 .orElseThrow(() -> new RuntimeException("Category not found"));
         
+        Double budgetLimit = budgetRepository.findLimitByYearAndMonth(userId, category.getId(), LocalDate.now().getMonthValue(), LocalDate.now().getYear())
+                .orElse(null);
+
+        Double transactionSum = transactionRepository.sumTransactionsByCategoryAndMonth(userId, category.getId(), LocalDate.now().getMonthValue(), LocalDate.now().getYear())
+                .orElse(0.0);
+
+        Boolean overSpend = false;
+
+        if (budgetLimit != null && (transactionSum + requestDTO.getAmount().doubleValue() > budgetLimit)) {
+                overSpend = true;
+        }
+
         existingTransaction.setAmount(requestDTO.getAmount());
         existingTransaction.setDescription(requestDTO.getDescription());
         existingTransaction.setDate(requestDTO.getDate());
@@ -97,7 +109,7 @@ public class TransactionService {
 
         Transaction updatedTransaction = transactionRepository.save(existingTransaction);
         
-        return mapToResponseDTO(updatedTransaction);
+        return mapToCreatedDTO(updatedTransaction, overSpend);
     }
 
     public void deleteTransaction(Long transactionId, Long userId) {

@@ -63,14 +63,14 @@ public class TransactionController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TransactionResponseDTO> updateTransaction(
+    public ResponseEntity<TransactionCreatedDTO> updateTransaction(
             Authentication authentication,
             @PathVariable Long id,
             @Valid @RequestBody TransactionRequestDTO requestDTO) {
 
         Long currentUserId = extractUserId(authentication);
 
-        TransactionResponseDTO updatedTransaction = transactionService.updateTransaction(requestDTO, id, currentUserId);
+        TransactionCreatedDTO updatedTransaction = transactionService.updateTransaction(requestDTO, id, currentUserId);
 
         return ResponseEntity.ok(updatedTransaction);
     }
