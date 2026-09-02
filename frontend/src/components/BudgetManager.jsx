@@ -138,7 +138,7 @@ export default function BudgetManager({ categories, refreshTrigger }) {
                     return (
                         <div key={budget.id} className="flex flex-col sm:flex-row sm:justify-between sm:items-center p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-100 dark:border-slate-600 gap-2">
                             <div className="w-full">
-                                <h4 className="font-medium text-slate-800 dark:text-slate-200 m-0">{budget.categoryName} <span className="text-sm font-normal text-slate-500 dark:text-slate-400">({formatMonthYear(budget.monthYear)})</span></h4>
+                                <h4 className="font-medium text-slate-800 dark:text-slate-200 m-0">{budget.categoryName} ({budget.categoryType})<span className="text-sm font-normal text-slate-500 dark:text-slate-400">({formatMonthYear(budget.monthYear)})</span></h4>
                                 
                                 {editingBudgetId === budget.id ? (
                                     <div className="flex flex-col w-full gap-2 mt-2">

@@ -95,7 +95,8 @@ public class BudgetService {
                 budget.getId(),
                 budget.getMonthlyLimit(),
                 budget.getMonthYear(),
-                budget.getCategory().getName()
+                budget.getCategory().getName(),
+                budget.getCategory().getType().name()
             );
     }
 }

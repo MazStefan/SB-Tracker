@@ -117,7 +117,8 @@ public class TransactionService {
                 transaction.getAmount(), 
                 transaction.getDescription(),
                 transaction.getDate(),
-                transaction.getCategory().getName()
+                transaction.getCategory().getName(),
+                transaction.getCategory().getType().name()
         );
     }
 
@@ -128,6 +129,7 @@ public class TransactionService {
                 transaction.getDescription(),
                 transaction.getDate(),
                 transaction.getCategory().getName(),
+                transaction.getCategory().getType().name(),
                 overSpend
         );
     }

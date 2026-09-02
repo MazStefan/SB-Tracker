@@ -9,12 +9,14 @@ public class BudgetResponseDTO {
     private BigDecimal monthlyLimit;
     private LocalDate monthYear;
     private String categoryName;
+    private String categoryType;
 
-    public BudgetResponseDTO(Long id, BigDecimal monthlyLimit, LocalDate monthYear, String categoryName) {
+    public BudgetResponseDTO(Long id, BigDecimal monthlyLimit, LocalDate monthYear, String categoryName, String categoryType) {
         this.id = id;
         this.monthlyLimit = monthlyLimit;
         this.monthYear = monthYear;
         this.categoryName = categoryName;
+        this.categoryType = categoryType;
     }
 
     public Long getId() { return id; }
@@ -24,4 +26,6 @@ public class BudgetResponseDTO {
     public LocalDate getMonthYear() { return monthYear; }
 
     public String getCategoryName() { return categoryName; }
+
+    public String getCategoryType() { return categoryType; }
 }

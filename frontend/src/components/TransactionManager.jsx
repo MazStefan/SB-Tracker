@@ -194,7 +194,7 @@ export default function TransactionManager({ categories, refreshTrigger }) {
                             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                                 <div>
                                     <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
-                                        {new Date(t.date).toLocaleString()} <span className="mx-1">•</span> <span className="text-blue-600 dark:text-blue-400">{t.categoryName}</span>
+                                        {new Date(t.date).toLocaleString()} <span className="mx-1">•</span> <span className="text-blue-600 dark:text-blue-400">{t.categoryName} ({t.categoryType})</span>
                                     </div>
                                     <div className="text-slate-800 dark:text-slate-200">
                                         <strong className="text-lg mr-2">${t.amount}</strong> 

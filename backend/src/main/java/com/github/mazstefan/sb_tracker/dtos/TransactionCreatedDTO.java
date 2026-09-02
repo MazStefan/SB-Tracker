@@ -9,6 +9,7 @@ public record TransactionCreatedDTO(
     String description, 
     LocalDateTime date, 
     String categoryName,
+    String categoryType,
     Boolean overSpend
 ) 
 {}
