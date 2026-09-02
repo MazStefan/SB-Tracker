@@ -150,22 +150,30 @@ export default function TransactionManager({ categories, refreshTrigger }) {
                 {transactions.map((t) => (
                     <div key={t.id} className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl border border-slate-100 dark:border-slate-600">
                         {editTransactionId === t.id ? (
-                            <div className="flex flex-col gap-3">
+                            <form 
+                                onSubmit={(e) => {
+                                    e.preventDefault();
+                                    handleSaveEdit(t.id);
+                                }} 
+                                className="flex flex-col gap-3"
+                            >
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                     <select 
                                         value={editCategoryId} 
                                         onChange={(e) => setEditCategoryId(e.target.value)} 
+                                        required
                                         className="px-2 py-1.5 bg-white dark:bg-slate-600 border border-slate-300 dark:border-slate-500 rounded text-sm outline-none text-slate-900 dark:text-white"
                                     >
                                         <option value="" disabled>Category</option>
                                         {categories.map(cat => (
-                                            <option key={cat.id} value={cat.id}>{cat.name}({cat.type})</option>
+                                            <option key={cat.id} value={cat.id}>{cat.name}</option>
                                         ))}
                                     </select>
                                     <input 
                                         type="number" 
                                         step="0.01" 
                                         max="99999999.99"
+                                        required
                                         value={editAmount} 
                                         onChange={(e) => setEditAmount(e.target.value)} 
                                         className="px-2 py-1.5 bg-white dark:bg-slate-600 border border-slate-300 dark:border-slate-500 rounded text-sm outline-none text-slate-900 dark:text-white" 
@@ -174,22 +182,24 @@ export default function TransactionManager({ categories, refreshTrigger }) {
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                     <input 
                                         type="text" 
+                                        required
                                         value={editDescription} 
                                         onChange={(e) => setEditDescription(e.target.value)} 
                                         className="px-2 py-1.5 bg-white dark:bg-slate-600 border border-slate-300 dark:border-slate-500 rounded text-sm outline-none text-slate-900 dark:text-white w-full" 
                                     />
                                     <input 
                                         type="datetime-local"
+                                        required
                                         value={editDate}
                                         onChange={(e) => setEditDate(e.target.value)}
                                         className="px-2 py-1.5 bg-white dark:bg-slate-600 border border-slate-300 dark:border-slate-500 rounded text-sm outline-none text-slate-900 dark:text-white w-full"
                                     />
                                 </div>
                                 <div className="flex gap-2 mt-1">
-                                    <button onClick={() => handleSaveEdit(t.id)} className="bg-green-600 hover:bg-green-700 text-white text-xs px-4 py-2 rounded">Save</button>
-                                    <button onClick={() => setEditTranasactionId(null)} className="bg-slate-400 hover:bg-slate-500 text-white text-xs px-4 py-2 rounded">Cancel</button>
+                                    <button type="submit" className="bg-green-600 hover:bg-green-700 text-white text-xs px-4 py-2 rounded">Save</button>
+                                    <button type="button" onClick={() => setEditTranasactionId(null)} className="bg-slate-400 hover:bg-slate-500 text-white text-xs px-4 py-2 rounded">Cancel</button>
                                 </div>
-                            </div>
+                            </form>
                         ) : (
                             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                                 <div>
