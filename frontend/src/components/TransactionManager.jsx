@@ -16,6 +16,8 @@ export default function TransactionManager({ categories, refreshTrigger }) {
     const [editCategoryId, setEditCategoryId] = useState('');
     const [editDate, setEditDate] = useState('');
 
+    const [error, setError] = useState('');
+
     const getLocalIsoString = () => {
         const now = new Date();
         now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
@@ -56,7 +58,8 @@ export default function TransactionManager({ categories, refreshTrigger }) {
             setAmount('');
             setDescription('');
         } catch (err) {
-            alert('Failed to create transaction');
+            const errorMessage = err.response.data.error || 'Failed to create transaction';
+            setError(errorMessage);
         }
     };
 
@@ -66,7 +69,8 @@ export default function TransactionManager({ categories, refreshTrigger }) {
             await dataService.deleteTransaction(id);
             setTransactions(transactions.filter(t => t.id !== id));
         } catch (err) {
-            alert('Failed to delete transaction');
+            const errorMessage = err.response.data.error || 'Failed to delete transaction';
+            setError(errorMessage);
         }
     };
 
@@ -86,7 +90,8 @@ export default function TransactionManager({ categories, refreshTrigger }) {
             setTransactions(transactions.map(t => t.id === id ? updatedTransaction : t));
             setEditTranasactionId(null);
         } catch(err) {
-            alert('Failed to update transaction');
+            const errorMessage = err.response.data.error || 'Failed to update transaction';
+            setError(errorMessage);
         }
     };
 
@@ -94,6 +99,12 @@ export default function TransactionManager({ categories, refreshTrigger }) {
         <div className="flex flex-col h-full">
             <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4 text-center">Log Transaction</h3>
             
+            {error && (
+                <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-sm font-medium rounded-lg border border-red-200 dark:border-red-800">
+                    {error}
+                </div>
+            )}
+
             {warning && (
                 <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-sm font-medium rounded-lg border border-red-200 dark:border-red-800">
                     {warning}
