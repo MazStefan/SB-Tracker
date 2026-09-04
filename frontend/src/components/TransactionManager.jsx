@@ -102,14 +102,30 @@ export default function TransactionManager({ categories, refreshTrigger }) {
             <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4 text-center">Log Transaction</h3>
             
             {error && (
-                <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-sm font-medium rounded-lg border border-red-200 dark:border-red-800">
-                    {error}
+                <div className="flex items-center justify-between bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                    <span className="block sm:inline text-sm">{error}</span>
+                    <button 
+                        type="button"
+                        onClick={() => setError('')} 
+                        className="text-red-500 hover:text-red-900 focus:outline-none text-xl font-bold ml-4 leading-none"
+                        aria-label="Close"
+                    >
+                        &times;
+                    </button>
                 </div>
             )}
 
             {warning && (
-                <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-sm font-medium rounded-lg border border-red-200 dark:border-red-800">
-                    {warning}
+                <div className="flex items-center justify-between bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative mb-4">
+                    <span className="block sm:inline text-sm">{warning}</span>
+                    <button 
+                        type="button"
+                        onClick={() => setWarning('')} 
+                        className="text-yellow-500 hover:text-yellow-900 focus:outline-none text-xl font-bold ml-4 leading-none"
+                        aria-label="Close"
+                    >
+                        &times;
+                    </button>
                 </div>
             )}
             
