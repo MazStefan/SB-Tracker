@@ -1,4 +1,4 @@
-# Full-Stack Personal Finance Dashboard
+# SB-Tracker - Full-Stack Personal Finance Dashboard
 
 ## Project Overview
 A comprehensive personal finance dashboard built with **React (Vite/Tailwind)** and **Spring Boot 4**. This application allows users to securely track transactions, manage monthly budgets, and categorize expenses. It focuses heavily on data integrity, responsive UI design, and robust full-stack security.
