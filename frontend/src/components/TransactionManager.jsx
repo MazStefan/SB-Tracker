@@ -10,7 +10,7 @@ export default function TransactionManager({ categories, refreshTrigger }) {
     const [categoryId, setCategoryId] = useState('');
     const [warning, setWarning] = useState('');
 
-    const [editTransactionId, setEditTranasactionId] = useState(null);
+    const [editTransactionId, setEditTransactionId] = useState(null);
     const [editAmount, setEditAmount] = useState('');
     const [editDescription, setEditDescription] = useState('');
     const [editCategoryId, setEditCategoryId] = useState('');
@@ -90,7 +90,7 @@ export default function TransactionManager({ categories, refreshTrigger }) {
             }
 
             setTransactions(transactions.map(t => t.id === id ? updatedTransaction : t));
-            setEditTranasactionId(null);
+            setEditTransactionId(null);
         } catch(err) {
             const errorMessage = err.response.data.error || 'Failed to update transaction';
             setError(errorMessage);
@@ -231,7 +231,7 @@ export default function TransactionManager({ categories, refreshTrigger }) {
                                 </div>
                                 <div className="flex gap-2 mt-1">
                                     <button type="submit" className="bg-green-600 hover:bg-green-700 text-white text-xs px-4 py-2 rounded">Save</button>
-                                    <button type="button" onClick={() => setEditTranasactionId(null)} className="bg-slate-400 hover:bg-slate-500 text-white text-xs px-4 py-2 rounded">Cancel</button>
+                                    <button type="button" onClick={() => setEditTransactionId(null)} className="bg-slate-400 hover:bg-slate-500 text-white text-xs px-4 py-2 rounded">Cancel</button>
                                 </div>
                             </form>
                         ) : (
@@ -261,7 +261,7 @@ export default function TransactionManager({ categories, refreshTrigger }) {
                                         <>
                                             <button 
                                                 onClick={() => {
-                                                    setEditTranasactionId(t.id);
+                                                    setEditTransactionId(t.id);
                                                     setEditAmount(t.amount);
                                                     setEditDescription(t.description);
                                                     setEditCategoryId(t.categoryId || categories.find(c => c.name === t.categoryName)?.id || '');
