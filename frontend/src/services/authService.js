@@ -18,7 +18,7 @@ export const authService = {
     },
 
     changePassword: async (passwordData) => {
-        const response = await api.post('/users/password', passwordData);
+        const response = await api.put('/users/password', passwordData);
         return response.data;
     },
 
