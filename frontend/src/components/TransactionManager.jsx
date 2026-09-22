@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { dataService } from '../services/dataService';
 import api from '../services/api';
+import { formatAmount } from '../services/utils';
 
 export default function TransactionManager({ categories, refreshTrigger }) {
     const [transactions, setTransactions] = useState([]);
@@ -241,7 +242,7 @@ export default function TransactionManager({ categories, refreshTrigger }) {
                                         {new Date(t.date).toLocaleString()} <span className="mx-1">•</span> <span className="text-blue-600 dark:text-blue-400">{t.categoryName} ({t.categoryType})</span>
                                     </div>
                                     <div className="text-slate-800 dark:text-slate-200">
-                                        <strong className="text-lg mr-2">${t.amount}</strong> 
+                                        <strong className="text-lg mr-2">${formatAmount(t.amount)}</strong> 
                                         <span className="text-sm">{t.description}</span>
                                     </div>
                                 </div>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { dataService } from '../services/dataService';
 import api from '../services/api';
+import { formatAmount } from '../services/utils';
 
 export default function BudgetManager({ categories, refreshTrigger }) {
     const [budgets, setBudgets] = useState([]);
@@ -182,7 +183,7 @@ export default function BudgetManager({ categories, refreshTrigger }) {
                                         </div>
                                     </form>
                                 ) : (
-                                    <p className="text-sm text-slate-600 dark:text-slate-400 m-0">Limit: ${budget.monthlyLimit}</p>
+                                    <p className="text-sm text-slate-600 dark:text-slate-400 m-0">Limit: ${formatAmount(budget.monthlyLimit)}</p>
                                 )}
                             </div>
 
