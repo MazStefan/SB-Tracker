@@ -238,6 +238,11 @@ export default function TransactionManager({ categories, refreshTrigger }) {
                         ) : (
                             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                                 <div>
+                                    {t.ownerEmail && (
+                                        <div className="bg-purple-100 text-purple-700 text-[10px] px-2 py-0.5 rounded-full font-medium">
+                                            {t.ownerEmail}
+                                        </div>
+                                    )}
                                     <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
                                         {new Date(t.date).toLocaleString()} <span className="mx-1">•</span> <span className="text-blue-600 dark:text-blue-400">{t.categoryName} ({t.categoryType})</span>
                                     </div>

@@ -128,9 +128,20 @@ export default function CategoryManager({ categories, onCategoryChange }) {
                             </form>
                         ) : (
                             <>
-                                <div>
-                                    <span className="text-slate-700 dark:text-slate-200 font-medium block">{cat.name}</span>
-                                    <span className="text-xs text-slate-500 dark:text-slate-400">{cat.type}</span>
+                                <div className="flex flex-col items-start">
+                                    {cat.ownerEmail && (
+                                        <span className="bg-purple-100 text-purple-700 text-[10px] px-2 py-0.5 rounded-full font-medium mb-1 w-fit">
+                                            {cat.ownerEmail}
+                                        </span>
+                                    )}
+
+                                    <span className="text-slate-700 dark:text-slate-200 font-medium leading-tight">
+                                        {cat.name}
+                                    </span>
+                                    
+                                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                                        {cat.type}
+                                    </span>
                                 </div>
                                 <div className="flex gap-2">
                                     {deletingCategoryId === cat.id ? (
