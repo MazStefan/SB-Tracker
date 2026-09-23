@@ -11,7 +11,9 @@ public class TransactionResponseDTO {
     private LocalDateTime date;
     private String categoryName;
     private String categoryType;
+    private String ownerEmail;
 
+    // USER CONSTRUCOTR
     public TransactionResponseDTO(Long id, BigDecimal amount, String description, LocalDateTime date, String categoryName, String categoryType) {
         this.id = id;
         this.amount = amount;
@@ -19,6 +21,17 @@ public class TransactionResponseDTO {
         this.date = date;
         this.categoryName = categoryName;
         this.categoryType = categoryType;
+    }
+
+    // ADMIN CONSTRUCTOR
+    public TransactionResponseDTO(Long id, BigDecimal amount, String description, LocalDateTime date, String categoryName, String categoryType, String ownerEmail) {
+        this.id = id;
+        this.amount = amount;
+        this.description = description;
+        this.date = date;
+        this.categoryName = categoryName;
+        this.categoryType = categoryType;
+        this.ownerEmail = ownerEmail;
     }
 
     public Long getId() { return id; }
@@ -32,4 +45,6 @@ public class TransactionResponseDTO {
     public String getCategoryName() { return categoryName; }
 
     public String getCategoryType() { return categoryType; }
+
+    public String getOwnerEmail() { return ownerEmail; }
 }

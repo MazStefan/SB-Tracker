@@ -69,10 +69,25 @@ public class TransactionService {
     }
 
     public List<TransactionResponseDTO> getUserTransactions(Long userId) {
-        List<Transaction> transactions = transactionRepository.findAllByUserId(userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<Transaction> transactions;
+
+        boolean isAdmin = user.getRole().name().equals("ADMIN");
+
+        if(isAdmin) {
+
+                transactions = transactionRepository.findAll();
+
+        } else {
+
+                transactions = transactionRepository.findAllByUserId(userId);
+
+        }
 
         return transactions.stream()
-                .map(this::mapToResponseDTO)
+                .map(transaction -> mapToResponseDTO(transaction, isAdmin))
                 .collect(Collectors.toList());
     }
 
@@ -80,7 +95,7 @@ public class TransactionService {
         Transaction transaction = transactionRepository.findByIdAndUserId(transactionId, userId)
                 .orElseThrow(() -> new RuntimeException("Transaction not found"));
         
-        return mapToResponseDTO(transaction);
+        return mapToResponseDTO(transaction, false);
     }
 
     public TransactionCreatedDTO updateTransaction(TransactionRequestDTO requestDTO, Long transactionId, Long userId) {
@@ -123,15 +138,26 @@ public class TransactionService {
         return transactionRepository.getMonthlySpendReport(userId, month, year);
     }
 
-    private TransactionResponseDTO mapToResponseDTO(Transaction transaction) {
-        return new TransactionResponseDTO(
-                transaction.getId(), 
-                transaction.getAmount(), 
-                transaction.getDescription(),
-                transaction.getDate(),
-                transaction.getCategory().getName(),
-                transaction.getCategory().getType().name()
-        );
+    private TransactionResponseDTO mapToResponseDTO(Transaction transaction, boolean isAdmin) {
+        if(isAdmin)
+                return new TransactionResponseDTO(
+                        transaction.getId(), 
+                        transaction.getAmount(), 
+                        transaction.getDescription(),
+                        transaction.getDate(),
+                        transaction.getCategory().getName(),
+                        transaction.getCategory().getType().name(),
+                        transaction.getUser().getEmail()
+                );
+        else
+                return new TransactionResponseDTO(
+                        transaction.getId(), 
+                        transaction.getAmount(), 
+                        transaction.getDescription(),
+                        transaction.getDate(),
+                        transaction.getCategory().getName(),
+                        transaction.getCategory().getType().name()
+                );
     }
 
     private TransactionCreatedDTO mapToCreatedDTO(Transaction transaction, Boolean overSpend) {

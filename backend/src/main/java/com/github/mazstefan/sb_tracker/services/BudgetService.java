@@ -45,14 +45,29 @@ public class BudgetService {
 
         Budget savedBudget = budgetRepository.save(budget);
 
-        return mapToResponseDTO(savedBudget);
+        return mapToResponseDTO(savedBudget, false);
     }
 
     public List<BudgetResponseDTO> getUserBudgets(Long userId) {
-        List<Budget> budgets = budgetRepository.findAllByUserId(userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<Budget> budgets;
+
+        boolean isAdmin = user.getRole().name().equals("ADMIN");
+
+        if (isAdmin) {
+
+            budgets = budgetRepository.findAll();
+
+        } else {
+
+            budgets = budgetRepository.findAllByUserId(userId);
+
+        }
 
         return budgets.stream()
-                .map(this::mapToResponseDTO)
+                .map(budget -> mapToResponseDTO(budget, isAdmin))
                 .collect(Collectors.toList());
     }
 
@@ -60,7 +75,7 @@ public class BudgetService {
         Budget budget = budgetRepository.findByIdAndUserId(budgetId, userId)
                 .orElseThrow(() -> new RuntimeException("Budget not found"));
 
-        return mapToResponseDTO(budget);
+        return mapToResponseDTO(budget, false);
     }
 
     public BudgetResponseDTO updateBudget(BudgetRequestDTO requestDTO, Long budgetId, Long userId) {
@@ -80,7 +95,7 @@ public class BudgetService {
 
         Budget updatedBudget = budgetRepository.save(existingBudget);
 
-        return mapToResponseDTO(updatedBudget);
+        return mapToResponseDTO(updatedBudget, false);
     }
 
     public void deleteBudget(Long budgetId, Long userId) {
@@ -90,13 +105,23 @@ public class BudgetService {
         budgetRepository.delete(budget);
     }
 
-    private BudgetResponseDTO mapToResponseDTO(Budget budget) {
-        return new BudgetResponseDTO(
-                budget.getId(),
-                budget.getMonthlyLimit(),
-                budget.getMonthYear(),
-                budget.getCategory().getName(),
-                budget.getCategory().getType().name()
+    private BudgetResponseDTO mapToResponseDTO(Budget budget, boolean isAdmin) {
+        if(isAdmin)
+            return new BudgetResponseDTO(
+                    budget.getId(),
+                    budget.getMonthlyLimit(),
+                    budget.getMonthYear(),
+                    budget.getCategory().getName(),
+                    budget.getCategory().getType().name(),
+                    budget.getUser().getEmail()
+            );
+        else
+            return new BudgetResponseDTO(
+                    budget.getId(),
+                    budget.getMonthlyLimit(),
+                    budget.getMonthYear(),
+                    budget.getCategory().getName(),
+                    budget.getCategory().getType().name()
             );
     }
 }

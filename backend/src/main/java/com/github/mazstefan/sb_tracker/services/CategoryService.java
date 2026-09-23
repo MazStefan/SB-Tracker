@@ -39,14 +39,29 @@ public class CategoryService {
 
         Category savedCategory = categoryRepository.save(category);
 
-        return mapToResponseDTO(savedCategory);
+        return mapToResponseDTO(savedCategory, false);
     }
 
     public List<CategoryResponseDTO> getUserCategories(Long userId) {
-        List<Category> categories = categoryRepository.findAllByUserId(userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        List<Category> categories;
+
+        boolean isAdmin = user.getRole().name().equals("ADMIN");
+
+        if (isAdmin) {
+
+            categories = categoryRepository.findAll();
+        
+        } else {
+
+            categories = categoryRepository.findAllByUserId(userId);
+
+        }
 
         return categories.stream()
-                .map(this::mapToResponseDTO)
+                .map(category -> mapToResponseDTO(category, isAdmin))
                 .collect(Collectors.toList());
     }
 
@@ -63,7 +78,7 @@ public class CategoryService {
 
         Category updatedCategory = categoryRepository.save(existingCategory);
 
-        return mapToResponseDTO(updatedCategory);
+        return mapToResponseDTO(updatedCategory, false);
     }
 
     public void deleteCategory(Long categoryId, Long userId) {
@@ -73,11 +88,20 @@ public class CategoryService {
         categoryRepository.delete(category);
     }
 
-    private CategoryResponseDTO mapToResponseDTO(Category category) {
-        return new CategoryResponseDTO(
+    private CategoryResponseDTO mapToResponseDTO(Category category, boolean isAdmin) {
+        if (isAdmin)
+            return new CategoryResponseDTO(
                 category.getId(), 
                 category.getName(), 
-                category.getType()
-        );
+                category.getType(),
+                category.getUser().getEmail()
+            );
+        
+        else
+            return new CategoryResponseDTO(
+                    category.getId(), 
+                    category.getName(), 
+                    category.getType()
+            );
     }
 }
