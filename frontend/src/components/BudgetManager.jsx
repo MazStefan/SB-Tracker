@@ -3,7 +3,7 @@ import { dataService } from '../services/dataService';
 import api from '../services/api';
 import { formatAmount } from '../services/utils';
 
-export default function BudgetManager({ categories, refreshTrigger }) {
+export default function BudgetManager({ categories, refreshTrigger, onDataChange }) {
     const [budgets, setBudgets] = useState([]);
     const [newCategoryId, setNewCategoryId] = useState('');
     const [newAmountLimit, setNewAmountLimit] = useState('');
@@ -51,6 +51,7 @@ export default function BudgetManager({ categories, refreshTrigger }) {
             setBudgets([...budgets, newBudget]);
             setNewCategoryId('');
             setNewAmountLimit('');
+            if (onDataChange) onDataChange();
         } catch (err) {
            const errorMessage = err.response.data.error || 'Failed to create budget';
             setError(errorMessage);
@@ -63,6 +64,7 @@ export default function BudgetManager({ categories, refreshTrigger }) {
             await dataService.deleteBudget(id);
             setBudgets(budgets.filter(b => b.id !== id));
             setDeletingBudgetId(null);
+            if (onDataChange) onDataChange();
         } catch (err) {
             const errorMessage = err.response.data.error || 'Failed to delete budget';
             setError(errorMessage);
@@ -78,6 +80,7 @@ export default function BudgetManager({ categories, refreshTrigger }) {
             });
             setBudgets(budgets.map(b => b.id === id ? updatedBudget : b));
             setEditingBudgetId(null);
+            if (onDataChange) onDataChange();
         } catch (err) {
             const errorMessage = err.response.data.error || 'Failed to update budget';
             setError(errorMessage);

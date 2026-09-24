@@ -3,7 +3,7 @@ import { dataService } from '../services/dataService';
 import api from '../services/api';
 import { formatAmount } from '../services/utils';
 
-export default function TransactionManager({ categories, refreshTrigger }) {
+export default function TransactionManager({ categories, refreshTrigger, onDataChange }) {
     const [transactions, setTransactions] = useState([]);
     
     const [amount, setAmount] = useState('');
@@ -53,12 +53,13 @@ export default function TransactionManager({ categories, refreshTrigger }) {
             });
 
             if (response.overSpend) {
-                setWarning('⚠️ Transaction edited, but you have exceeded your budget!');
+                setWarning('⚠️ Transaction created, but you have exceeded your budget!');
             }
 
             setTransactions([response, ...transactions]);
             setAmount('');
             setDescription('');
+            if (onDataChange) onDataChange();
         } catch (err) {
             const errorMessage = err.response.data.error || 'Failed to create transaction';
             setError(errorMessage);
@@ -71,6 +72,7 @@ export default function TransactionManager({ categories, refreshTrigger }) {
             await dataService.deleteTransaction(id);
             setTransactions(transactions.filter(t => t.id !== id));
             setDeletingTransactionId(null);
+            if (onDataChange) onDataChange();
         } catch (err) {
             const errorMessage = err.response.data.error || 'Failed to delete transaction';
             setError(errorMessage);
@@ -92,6 +94,7 @@ export default function TransactionManager({ categories, refreshTrigger }) {
 
             setTransactions(transactions.map(t => t.id === id ? updatedTransaction : t));
             setEditTransactionId(null);
+            if (onDataChange) onDataChange();
         } catch(err) {
             const errorMessage = err.response.data.error || 'Failed to update transaction';
             setError(errorMessage);
