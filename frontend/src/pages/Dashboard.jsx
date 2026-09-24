@@ -6,6 +6,7 @@ import { authService } from '../services/authService';
 import CategoryManager from '../components/CategoryManager';
 import BudgetManager from '../components/BudgetManager';
 import TransactionManager from '../components/TransactionManager';
+import ReportManager from '../components/ReportManager';
 
 export default function Dashboard() {
     const [categories, setCategories] = useState([]);
@@ -51,7 +52,7 @@ export default function Dashboard() {
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-200">
-            <div className="max-w-7xl mx-auto space-y-8">
+            <div className="w-full max-w-7xl mx-auto space-y-8">
                 
                 {/* HEADER SECTION */}
                 <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 transition-colors duration-200">
@@ -82,7 +83,7 @@ export default function Dashboard() {
                 )}
 
                 {/* MAIN CONTENT GRID */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     
                     {/* LEFT COLUMN: Categories & Budgets */}
                     <div className="lg:col-span-1 space-y-8">
@@ -101,13 +102,20 @@ export default function Dashboard() {
                         </section>
                     </div>
 
-                    {/* RIGHT COLUMN: Transactions */}
+                    {/* MIDDLE COLUMN: Transactions */}
                     <div className="lg:col-span-2">
                         <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 h-full transition-colors duration-200">
                             <TransactionManager
                                 categories={categories}
                                 refreshTrigger={refreshTrigger}
                             />
+                        </section>
+                    </div>
+
+                    {/* RIGHT COLUMN: Reports */}
+                    <div className="lg:col-span-1 space-y-8">
+                        <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 h-full transition-colors duration-200">
+                            <ReportManager />
                         </section>
                     </div>
 
