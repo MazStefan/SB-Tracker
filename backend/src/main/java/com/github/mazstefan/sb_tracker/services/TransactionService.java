@@ -7,12 +7,14 @@ import com.github.mazstefan.sb_tracker.dtos.TransactionCreatedDTO;
 import com.github.mazstefan.sb_tracker.entities.Transaction;
 import com.github.mazstefan.sb_tracker.entities.Category;
 import com.github.mazstefan.sb_tracker.entities.User;
+import com.github.mazstefan.sb_tracker.entities.Budget;
 import com.github.mazstefan.sb_tracker.repositories.TransactionRepository;
 import com.github.mazstefan.sb_tracker.repositories.BudgetRepository;
 import com.github.mazstefan.sb_tracker.repositories.CategoryRepository;
 import com.github.mazstefan.sb_tracker.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -108,12 +110,16 @@ public class TransactionService {
         Double budgetLimit = budgetRepository.findLimitByYearAndMonth(userId, category.getId(), LocalDate.now().getMonthValue(), LocalDate.now().getYear())
                 .orElse(null);
 
-        Double transactionSum = transactionRepository.sumTransactionsByCategoryAndMonth(userId, category.getId(), LocalDate.now().getMonthValue(), LocalDate.now().getYear())
-                .orElse(0.0);
+        Double transactionSum = transactionRepository.sumTransactionsByCategoryAndMonth(userId, category.getId(), LocalDate.now().getMonthValue(), LocalDate.now().getYear()
+                ).orElse(0.0);
+
+        double updatedTotal = transactionSum 
+                - existingTransaction.getAmount().doubleValue() 
+                + requestDTO.getAmount().doubleValue();
 
         Boolean overSpend = false;
 
-        if (budgetLimit != null && (transactionSum + requestDTO.getAmount().doubleValue() > budgetLimit)) {
+        if (budgetLimit != null && updatedTotal > budgetLimit) {
                 overSpend = true;
         }
 
@@ -135,7 +141,18 @@ public class TransactionService {
     }
 
     public List<CategorySpendDTO> generateMonthlyReport(Long userId, int month, int year) {
-        return transactionRepository.getMonthlySpendReport(userId, month, year);
+        List<CategorySpendDTO> spent = transactionRepository.getMonthlySpendReport(userId, month, year);
+        List<Budget> budgets = budgetRepository.findAllByUserId(userId);
+
+        return spent.stream().map(spend -> {
+        BigDecimal limit = budgets.stream()
+                .filter(b -> b.getCategory().getName().equals(spend.categoryName()))
+                .findFirst()
+                .map(b -> b.getMonthlyLimit()) 
+                .orElse(BigDecimal.ZERO);
+                
+        return spend.withLimit(limit);
+        }).toList();
     }
 
     private TransactionResponseDTO mapToResponseDTO(Transaction transaction, boolean isAdmin) {
