@@ -106,17 +106,28 @@ public class TransactionService {
 
         Category category = categoryRepository.findByIdAndUserId(requestDTO.getCategoryId(), userId)
                 .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        int targetMonth = requestDTO.getDate().getMonthValue();
+        int targetYear = requestDTO.getDate().getYear();
         
-        Double budgetLimit = budgetRepository.findLimitByYearAndMonth(userId, category.getId(), LocalDate.now().getMonthValue(), LocalDate.now().getYear())
+        Double budgetLimit = budgetRepository.findLimitByYearAndMonth(userId, category.getId(), targetMonth, targetYear)
                 .orElse(null);
 
-        Double transactionSum = transactionRepository.sumTransactionsByCategoryAndMonth(userId, category.getId(), LocalDate.now().getMonthValue(), LocalDate.now().getYear()
-                ).orElse(0.0);
+        Double transactionSum = transactionRepository.sumTransactionsByCategoryAndMonth(userId, category.getId(), targetMonth, targetYear)
+                .orElse(0.0);
 
-        double updatedTotal = transactionSum 
-                - existingTransaction.getAmount().doubleValue() 
-                + requestDTO.getAmount().doubleValue();
+        boolean isSameCategory = existingTransaction.getCategory().getId().equals(category.getId());
+        boolean isSameMonth = existingTransaction.getDate().getMonthValue() == targetMonth;
+        boolean isSameYear = existingTransaction.getDate().getYear() == targetYear;
 
+        double updatedTotal = transactionSum;
+
+        if (isSameCategory && isSameMonth && isSameYear) {
+                updatedTotal -= existingTransaction.getAmount().doubleValue();
+        } 
+
+        updatedTotal += requestDTO.getAmount().doubleValue();
+        
         Boolean overSpend = false;
 
         if (budgetLimit != null && updatedTotal > budgetLimit) {
