@@ -79,7 +79,7 @@ export default function ReportManager({ refreshTrigger }) {
                                     </span>
                                     {item.budgetLimit > 0 && (
                                         <span className="text-[10px] text-slate-500 dark:text-slate-400">
-                                            Limit: {formatAmount(item.budgetLimit)}
+                                            Limit: ${formatAmount(item.budgetLimit)}
                                         </span>
                                     )}
                                 </div>
