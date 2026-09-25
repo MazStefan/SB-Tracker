@@ -75,7 +75,7 @@ export default function ReportManager({ refreshTrigger }) {
                             >
                                 <div className="flex flex-col">
                                     <span className="font-medium text-slate-700 dark:text-slate-200 text-sm">
-                                        {item.categoryName}
+                                        {item.categoryName} ({item.categoryType})
                                     </span>
                                     {item.budgetLimit > 0 && (
                                         <span className="text-[10px] text-slate-500 dark:text-slate-400">
