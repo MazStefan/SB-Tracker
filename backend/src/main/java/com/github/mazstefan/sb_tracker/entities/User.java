@@ -26,6 +26,10 @@ public class User {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @ManyToOne
+    @JoinColumn(name = "group_id")
+    private UserGroup group;
+
     public User() {
         this.createdAt = LocalDateTime.now();
     }
@@ -42,4 +46,7 @@ public class User {
     public void setRole(Role role) { this.role = role; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
+
+    public UserGroup getGroup() { return group; }
+    public void setGroup(UserGroup group) { this.group = group; }
 }

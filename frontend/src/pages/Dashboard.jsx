@@ -2,14 +2,17 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { authService } from '../services/authService';
+import { Client } from '@stomp/stompjs';
 
 import CategoryManager from '../components/CategoryManager';
 import BudgetManager from '../components/BudgetManager';
 import TransactionManager from '../components/TransactionManager';
 import ReportManager from '../components/ReportManager';
+import GroupManager from '../components/GroupManager';
 
 export default function Dashboard() {
     const [categories, setCategories] = useState([]);
+    const [currentGroup, setCurrentGroup] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const navigate = useNavigate();
@@ -21,8 +24,10 @@ export default function Dashboard() {
             try {
                 const response = await api.get('/categories'); 
                 setCategories(response.data);
+                const userRes = await api.get('/users/me'); 
+                setCurrentGroup(userRes.data.group || null);
             } catch (err) {
-                console.error("Failed to fetch categories:", err);
+                console.error("Failed to fetch dashboard data:", err);
                 setError('Could not load data. Please try logging in again.');
             } finally {
                 setLoading(false);
@@ -32,6 +37,50 @@ export default function Dashboard() {
         fetchCategories();
         
     }, [refreshTrigger]);
+
+    useEffect(() => {
+        if (!currentGroup || !currentGroup.id) return;
+
+        const token = localStorage.getItem('jwt_token'); 
+
+        const stompClient = new Client({
+            brokerURL: `ws://${window.location.hostname}:8080/ws`, 
+            connectHeaders: { Authorization: `Bearer ${token}` },
+            debug: (str) => console.log('STOMP: ' + str),
+            onWebSocketClose: () => console.log('STOMP: Connection closed'),
+            onWebSocketError: (err) => console.error('STOMP WS Error: ', err),
+            
+            onConnect: () => {
+                console.log('✅ Connected to WebSockets for Group: ' + currentGroup.id);
+                
+                stompClient.subscribe(`/topic/group/${currentGroup.id}`, (message) => {
+                    const payload = JSON.parse(message.body);
+                    
+                    if (payload.action === 'REFRESH_TRANSACTIONS') {
+                        setRefreshTrigger(prev => prev + 1);
+                    }
+                });
+            },
+            
+            onStompError: (frame) => {
+                console.error('Broker error: ' + frame.headers['message']);
+            }
+        });
+
+        stompClient.activate();
+
+        return () => {
+            if (stompClient) {
+                stompClient.deactivate();
+            }
+        };
+        
+    }, [currentGroup?.id]);
+
+    const handleGroupUpdate = (updatedGroup) => {
+        setCurrentGroup(updatedGroup);
+        setRefreshTrigger(prev => prev + 1); 
+    };
 
     const handleLogout = () => {
         authService.logout();
@@ -114,8 +163,15 @@ export default function Dashboard() {
                         </section>
                     </div>
 
-                    {/* RIGHT COLUMN: Reports */}
+                    {/* RIGHT COLUMN: Reports & Groups*/}
                     <div className="lg:col-span-1 space-y-8">
+                        <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 transition-colors duration-200">
+                            <GroupManager 
+                                currentGroup={currentGroup}
+                                onGroupUpdate={handleGroupUpdate}
+                            />
+                        </section>
+
                         <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 h-full transition-colors duration-200">
                             <ReportManager refreshTrigger={refreshTrigger} />
                         </section>

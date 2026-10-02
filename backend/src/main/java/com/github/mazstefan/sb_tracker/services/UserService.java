@@ -4,6 +4,7 @@ import com.github.mazstefan.sb_tracker.dtos.UserLoginDTO;
 import com.github.mazstefan.sb_tracker.dtos.UserPasswordUpdateDTO;
 import com.github.mazstefan.sb_tracker.dtos.UserRegistrationDTO;
 import com.github.mazstefan.sb_tracker.dtos.UserResponseDTO;
+import com.github.mazstefan.sb_tracker.dtos.GroupResponseDTO;
 import com.github.mazstefan.sb_tracker.dtos.UserAuthResponseDTO;
 import com.github.mazstefan.sb_tracker.entities.User;
 import com.github.mazstefan.sb_tracker.entities.enums.Role;
@@ -88,10 +89,20 @@ public class UserService {
     }
 
     private UserResponseDTO mapToResponseDTO(User user) {
+        GroupResponseDTO groupDto = null;
+        if (user.getGroup() != null) {
+            groupDto = new GroupResponseDTO(
+                user.getGroup().getId(),
+                user.getGroup().getName(),
+                user.getGroup().getInviteCode(),
+                user.getGroup().getMembers().stream().map(User::getEmail).toList()
+            );
+        }
         return new UserResponseDTO(
             user.getId(),
             user.getEmail(),
-            user.getCreatedAt()
+            user.getCreatedAt(),
+            groupDto
         );
     }
 }

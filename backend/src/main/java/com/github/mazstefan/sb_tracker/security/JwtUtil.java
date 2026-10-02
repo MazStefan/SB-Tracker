@@ -9,7 +9,6 @@ import java.security.Key;
 import java.util.Date;
 import java.util.function.Function;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 @Component
 public class JwtUtil {
@@ -35,6 +34,13 @@ public class JwtUtil {
 
     public String extractMail(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+
+    public Long extractUserId(String token) {
+        return extractClaim(token, claims -> {
+            Number userId = claims.get("userId", Number.class);
+            return userId != null ? userId.longValue() : null;
+        });
     }
 
     public boolean isTokenValid(String token, String userEmail) {

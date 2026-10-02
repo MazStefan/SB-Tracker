@@ -10,6 +10,7 @@ public record TransactionCreatedDTO(
     LocalDateTime date, 
     String categoryName,
     String categoryType,
-    Boolean overSpend
+    Boolean overSpend,
+    String ownerEmail
 ) 
 {}

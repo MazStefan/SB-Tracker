@@ -12,11 +12,13 @@ import com.github.mazstefan.sb_tracker.repositories.TransactionRepository;
 import com.github.mazstefan.sb_tracker.repositories.BudgetRepository;
 import com.github.mazstefan.sb_tracker.repositories.CategoryRepository;
 import com.github.mazstefan.sb_tracker.repositories.UserRepository;
+
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,31 +28,35 @@ public class TransactionService {
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
     private final BudgetRepository budgetRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     public TransactionService(
             TransactionRepository transactionRepository,
             CategoryRepository categoryRepository,
             UserRepository userRepository,
-            BudgetRepository budgetRepository) {
+            BudgetRepository budgetRepository,
+            SimpMessagingTemplate messagingTemplate) {
         
         this.transactionRepository = transactionRepository;
         this.categoryRepository = categoryRepository;
         this.userRepository = userRepository;
         this.budgetRepository = budgetRepository;
+        this.messagingTemplate = messagingTemplate;
     }
 
     public TransactionCreatedDTO createTransaction(TransactionRequestDTO requestDTO, Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Category category = categoryRepository.findByIdAndUserId(requestDTO.getCategoryId(), userId)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+        Long categoryId = requestDTO.getCategoryId();
+        int targetMonth = requestDTO.getDate().getMonthValue();
+        int targetYear = requestDTO.getDate().getYear();
 
-        Double budgetLimit = budgetRepository.findLimitByYearAndMonth(userId, category.getId(), LocalDate.now().getMonthValue(), LocalDate.now().getYear())
-                .orElse(null);
+        Category category = findCategoryForUserContext(categoryId, user);
 
-        Double transactionSum = transactionRepository.sumTransactionsByCategoryAndMonth(userId, category.getId(), LocalDate.now().getMonthValue(), LocalDate.now().getYear())
-                .orElse(0.0);
+        Double budgetLimit = findLimitForUserContext(categoryId, targetMonth, targetYear, user);
+
+        Double transactionSum = findTransactionSumForUserContext(categoryId, targetMonth, targetYear, user);
 
         Boolean overSpend = false;
 
@@ -67,7 +73,18 @@ public class TransactionService {
 
         Transaction savedTransaction = transactionRepository.save(transaction);
 
-        return mapToCreatedDTO(savedTransaction, overSpend);
+        boolean isAdmin = user.getRole().name().equals("ADMIN");
+
+        boolean includeOwnerInfo = isAdmin || user.getGroup() != null;
+
+        if (user.getGroup() != null) {
+            String destination = "/topic/group/" + user.getGroup().getId();
+            
+            Map<String, String> payload = Map.of("action", "REFRESH_TRANSACTIONS");
+            messagingTemplate.convertAndSend(destination, payload);
+        }
+
+        return mapToCreatedDTO(savedTransaction, overSpend, includeOwnerInfo);
     }
 
     public List<TransactionResponseDTO> getUserTransactions(Long userId) {
@@ -84,37 +101,46 @@ public class TransactionService {
 
         } else {
 
-                transactions = transactionRepository.findAllByUserId(userId);
+                transactions = findAllTransactionForUserContext(user);
 
         }
 
+        boolean includeOwnerInfo = isAdmin || user.getGroup() != null;
+
         return transactions.stream()
-                .map(transaction -> mapToResponseDTO(transaction, isAdmin))
+                .map(transaction -> mapToResponseDTO(transaction, includeOwnerInfo))
                 .collect(Collectors.toList());
     }
 
     public TransactionResponseDTO getTransactionById(Long transactionId, Long userId) {
-        Transaction transaction = transactionRepository.findByIdAndUserId(transactionId, userId)
-                .orElseThrow(() -> new RuntimeException("Transaction not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Transaction transaction = findTransactionForUserContext(transactionId, user);
         
-        return mapToResponseDTO(transaction, false);
+        boolean isAdmin = user.getRole().name().equals("ADMIN");
+
+        boolean includeOwnerInfo = isAdmin || user.getGroup() != null;
+
+        return mapToResponseDTO(transaction, includeOwnerInfo);
     }
 
     public TransactionCreatedDTO updateTransaction(TransactionRequestDTO requestDTO, Long transactionId, Long userId) {
-        Transaction existingTransaction = transactionRepository.findByIdAndUserId(transactionId, userId)
-                .orElseThrow(() -> new RuntimeException("Transaction not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        Long categoryId = requestDTO.getCategoryId();
 
-        Category category = categoryRepository.findByIdAndUserId(requestDTO.getCategoryId(), userId)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+        Transaction existingTransaction = findTransactionForUserContext(transactionId, user);
+
+        Category category = findCategoryForUserContext(categoryId, user);
 
         int targetMonth = requestDTO.getDate().getMonthValue();
         int targetYear = requestDTO.getDate().getYear();
         
-        Double budgetLimit = budgetRepository.findLimitByYearAndMonth(userId, category.getId(), targetMonth, targetYear)
-                .orElse(null);
+        Double budgetLimit = findLimitForUserContext(categoryId, targetMonth, targetYear, user);
 
-        Double transactionSum = transactionRepository.sumTransactionsByCategoryAndMonth(userId, category.getId(), targetMonth, targetYear)
-                .orElse(0.0);
+        Double transactionSum = findTransactionSumForUserContext(categoryId, targetMonth, targetYear, user);
 
         boolean isSameCategory = existingTransaction.getCategory().getId().equals(category.getId());
         boolean isSameMonth = existingTransaction.getDate().getMonthValue() == targetMonth;
@@ -140,15 +166,35 @@ public class TransactionService {
         existingTransaction.setCategory(category);
 
         Transaction updatedTransaction = transactionRepository.save(existingTransaction);
+
+        boolean isAdmin = user.getRole().name().equals("ADMIN");
+
+        boolean includeOwnerInfo = isAdmin || user.getGroup() != null;
+
+        if (user.getGroup() != null) {
+            String destination = "/topic/group/" + user.getGroup().getId();
+            
+            Map<String, String> payload = Map.of("action", "REFRESH_TRANSACTIONS");
+            messagingTemplate.convertAndSend(destination, payload);
+        }
         
-        return mapToCreatedDTO(updatedTransaction, overSpend);
+        return mapToCreatedDTO(updatedTransaction, overSpend, includeOwnerInfo);
     }
 
     public void deleteTransaction(Long transactionId, Long userId) {
-        Transaction transaction = transactionRepository.findByIdAndUserId(transactionId, userId)
-                .orElseThrow(() -> new RuntimeException("Transaction not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Transaction transaction = findTransactionForUserContext(transactionId, user);
             
         transactionRepository.delete(transaction);
+
+        if (user.getGroup() != null) {
+            String destination = "/topic/group/" + user.getGroup().getId();
+            
+            Map<String, String> payload = Map.of("action", "REFRESH_TRANSACTIONS");
+            messagingTemplate.convertAndSend(destination, payload);
+        }
     }
 
     public List<CategorySpendDTO> generateMonthlyReport(Long userId, int month, int year) {
@@ -166,29 +212,66 @@ public class TransactionService {
         }).toList();
     }
 
-    private TransactionResponseDTO mapToResponseDTO(Transaction transaction, boolean isAdmin) {
-        if(isAdmin)
-                return new TransactionResponseDTO(
-                        transaction.getId(), 
-                        transaction.getAmount(), 
-                        transaction.getDescription(),
-                        transaction.getDate(),
-                        transaction.getCategory().getName(),
-                        transaction.getCategory().getType().name(),
-                        transaction.getUser().getEmail()
-                );
+    private Transaction findTransactionForUserContext(Long transactionId, User user) {
+        if (user.getGroup() != null)
+                return transactionRepository.findByIdAndUserGroupId(transactionId, user.getGroup().getId())
+                                .orElseThrow(() -> new RuntimeException("Transaction not found"));
         else
-                return new TransactionResponseDTO(
-                        transaction.getId(), 
-                        transaction.getAmount(), 
-                        transaction.getDescription(),
-                        transaction.getDate(),
-                        transaction.getCategory().getName(),
-                        transaction.getCategory().getType().name()
-                );
+                return transactionRepository.findByIdAndUserId(transactionId, user.getId())
+                                .orElseThrow(() -> new RuntimeException("Transaction not found"));
     }
 
-    private TransactionCreatedDTO mapToCreatedDTO(Transaction transaction, Boolean overSpend) {
+    private List<Transaction> findAllTransactionForUserContext(User user) {
+        if (user.getGroup() != null)
+                return transactionRepository.findAllByUserGroupId(user.getGroup().getId());
+        else
+                return transactionRepository.findAllByUserId(user.getId());
+    }
+
+    private Category findCategoryForUserContext(Long categoryId, User user) {
+        if (user.getGroup() != null) 
+            return categoryRepository.findByIdAndUserGroupId(categoryId, user.getGroup().getId())
+                    .orElseThrow(() -> new RuntimeException("Category not found in group"));
+        else
+                return categoryRepository.findByIdAndUserId(categoryId, user.getId())
+                        .orElseThrow(() -> new RuntimeException("Category not found"));
+    }
+
+    private Double findLimitForUserContext(Long categoryId, int month, int year, User user) {
+        if (user.getGroup() != null)
+                return budgetRepository.findGroupLimitByYearAndMonth(user.getGroup().getId(), categoryId, month, year)
+                                        .orElse(null);
+        else
+                return budgetRepository.findLimitByYearAndMonth(user.getId(), categoryId, month, year)
+                                        .orElse(null);
+    }
+
+    private Double findTransactionSumForUserContext(Long categoryId, int month, int year, User user) {
+        if (user.getGroup() != null)
+                return transactionRepository.sumGroupTransactionsByCategoryAndMonth(user.getGroup().getId(), categoryId, month, year)
+                                        .orElse(0.0);
+        else
+                return transactionRepository.sumTransactionsByCategoryAndMonth(user.getId(), categoryId, month, year)
+                                        .orElse(0.0);
+    }
+
+    private TransactionResponseDTO mapToResponseDTO(Transaction transaction, boolean includeOwnerInfo) {
+        String ownerEmail = includeOwnerInfo ? transaction.getUser().getEmail() : null;
+
+        return new TransactionResponseDTO(
+                transaction.getId(), 
+                transaction.getAmount(), 
+                transaction.getDescription(),
+                transaction.getDate(),
+                transaction.getCategory().getName(),
+                transaction.getCategory().getType().name(),
+                ownerEmail
+        );
+    }
+
+    private TransactionCreatedDTO mapToCreatedDTO(Transaction transaction, Boolean overSpend, boolean includeOwnerInfo) {
+        String ownerEmail = includeOwnerInfo ? transaction.getUser().getEmail() : null;
+
         return new TransactionCreatedDTO(
                 transaction.getId(), 
                 transaction.getAmount(), 
@@ -196,7 +279,8 @@ public class TransactionService {
                 transaction.getDate(),
                 transaction.getCategory().getName(),
                 transaction.getCategory().getType().name(),
-                overSpend
+                overSpend,
+                ownerEmail
         );
     }
 }

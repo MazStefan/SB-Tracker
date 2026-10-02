@@ -15,11 +15,19 @@ public interface BudgetRepository extends JpaRepository<Budget, Long> {
     
     Optional<Budget> findByUserIdAndCategoryId(Long userId, Long categoryId);
 
+    Optional<Budget> findByUserGroupIdAndCategoryId(Long groupId, Long categoryId);
+
     List<Budget> findAllByUserId(Long userId);
+
+    List<Budget> findAllByUserGroupId(Long groupId);
 
     Optional<Budget> findByIdAndUserId(Long budgetId, Long userId);
 
+    Optional<Budget> findByIdAndUserGroupId(Long budgetId, Long groupId);
+
     boolean existsByUserIdAndCategoryIdAndMonthYear(Long userId, Long categoryId, LocalDate monthYear);
+
+    boolean existsByUserGroupIdAndCategoryIdAndMonthYear(Long groupId, Long categoryId, LocalDate monthYear);
 
     @Query("SELECT b.monthlyLimit FROM Budget b WHERE b.user.id = :userId AND b.category.id = :categoryId AND MONTH(b.monthYear) = :month AND YEAR(b.monthYear) = :year")
     Optional<Double> findLimitByYearAndMonth(
@@ -29,5 +37,15 @@ public interface BudgetRepository extends JpaRepository<Budget, Long> {
         @Param("year") int year
     );
 
+    @Query("SELECT b.monthlyLimit FROM Budget b WHERE b.user.group.id = :groupId AND b.category.id = :categoryId AND MONTH(b.monthYear) = :month AND YEAR(b.monthYear) = :year")
+    Optional<Double> findGroupLimitByYearAndMonth(
+        @Param("groupId") Long groupId, 
+        @Param("categoryId") Long categoryId, 
+        @Param("month") int month, 
+        @Param("year") int year
+    );
+
     boolean existsByUserIdAndCategoryIdAndMonthYearAndIdNot(Long userId, Long categoryId, LocalDate monthYear, Long id);
+
+    boolean existsByUserGroupIdAndCategoryIdAndMonthYearAndIdNot(Long groupId, Long categoryId, LocalDate monthYear, Long id);
 }

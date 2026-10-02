@@ -15,14 +15,29 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     
     List<Transaction> findAllByUserId(Long id);
 
+    List<Transaction> findAllByUserGroupId(Long id);
+
     @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.user.id = :userId AND t.category.id = :categoryId")
     Double sumAmountByUserIdAndCategoryId(@Param("userId") Long userId, @Param("categoryId") Long categoryId);
 
+    @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.user.group.id = :groupId AND t.category.id = :categoryId")
+    Double sumAmountByUserGroupIdAndCategoryId(@Param("groupId") Long groupId, @Param("categoryId") Long categoryId);
+
     Optional<Transaction> findByIdAndUserId(Long id, Long userId);
+
+    Optional<Transaction> findByIdAndUserGroupId(Long id, Long groupId);
 
     @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.user.id = :userId AND t.category.id = :categoryId AND MONTH(t.date) = :month AND YEAR(t.date) = :year")
     Optional<Double> sumTransactionsByCategoryAndMonth(
         @Param("userId") Long userId, 
+        @Param("categoryId") Long categoryId, 
+        @Param("month") int month, 
+        @Param("year") int year
+    );
+
+    @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.user.group.id = :groupId AND t.category.id = :categoryId AND MONTH(t.date) = :month AND YEAR(t.date) = :year")
+    Optional<Double> sumGroupTransactionsByCategoryAndMonth(
+        @Param("groupId") Long groupId, 
         @Param("categoryId") Long categoryId, 
         @Param("month") int month, 
         @Param("year") int year
@@ -38,4 +53,16 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             @Param("month") int month, 
             @Param("year") int year
     );
+
+    @Query("SELECT new com.github.mazstefan.sb_tracker.dtos.CategorySpendDTO(c.name, c.type, SUM(t.amount)) " +
+            "FROM Transaction t " +
+            "JOIN t.category c " +
+            "WHERE t.user.group.id = :groupId AND MONTH(t.date) = :month AND YEAR(t.date) = :year " +
+            "GROUP BY c.name, c.type")
+    List<CategorySpendDTO> getGroupMonthlySpendReport(
+            @Param("groupId") Long groupId,
+            @Param("month") int month,
+            @Param("year") int year
+    );
+
 }
