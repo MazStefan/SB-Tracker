@@ -4,14 +4,21 @@ import java.math.BigDecimal;
 
 import com.github.mazstefan.sb_tracker.entities.enums.CategoryType;
 
-public record CategorySpendDTO(String categoryName, String categoryType, BigDecimal totalSpent, BigDecimal budgetLimit) {
+public record CategorySpendDTO(String categoryName, String categoryType, BigDecimal totalSpent, BigDecimal budgetLimit, String ownerEmail) {
 
     public CategorySpendDTO(String categoryName, CategoryType categoryType, BigDecimal totalSpent) {
-        this(categoryName, categoryType.name(), totalSpent, BigDecimal.ZERO); 
+        this(categoryName, categoryType.name(), totalSpent, BigDecimal.ZERO, null); 
     }
     
     public CategorySpendDTO withLimit(BigDecimal limit) {
-        return new CategorySpendDTO(this.categoryName, this.categoryType, this.totalSpent, limit);
+        return new CategorySpendDTO(this.categoryName, this.categoryType, this.totalSpent, limit, null);
     }
-    
+
+    public CategorySpendDTO withOwner(String email) {
+        return new CategorySpendDTO(this.categoryName, this.categoryType, this.totalSpent, null, email);
+    }
+
+    public CategorySpendDTO withLimitOwner(BigDecimal limit, String email) {
+        return new CategorySpendDTO(this.categoryName, this.categoryType, this.totalSpent, limit, email);
+    }
 }

@@ -73,12 +73,18 @@ export default function ReportManager({ refreshTrigger }) {
                                         : 'bg-slate-50 dark:bg-slate-700/50 border-slate-100 dark:border-slate-600'
                                 }`}
                             >
-                                <div className="flex flex-col">
-                                    <span className="font-medium text-slate-700 dark:text-slate-200 text-sm">
+                                <div className="flex flex-col gap-1">
+                                    {/* ⚠️ Added ownerEmail badge here */}
+                                    {item.ownerEmail && (
+                                        <span className="bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 text-[10px] px-2 py-0.5 rounded-full font-medium w-max">
+                                            {item.ownerEmail}
+                                        </span>
+                                    )}
+                                    <span className="font-medium text-slate-700 dark:text-slate-200 text-sm leading-none">
                                         {item.categoryName} ({item.categoryType})
                                     </span>
                                     {item.budgetLimit > 0 && (
-                                        <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                                        <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
                                             Limit: ${formatAmount(item.budgetLimit)}
                                         </span>
                                     )}

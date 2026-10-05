@@ -7,6 +7,7 @@ import com.github.mazstefan.sb_tracker.dtos.TransactionCreatedDTO;
 import com.github.mazstefan.sb_tracker.entities.Transaction;
 import com.github.mazstefan.sb_tracker.entities.Category;
 import com.github.mazstefan.sb_tracker.entities.User;
+import com.github.mazstefan.sb_tracker.entities.enums.Role;
 import com.github.mazstefan.sb_tracker.entities.Budget;
 import com.github.mazstefan.sb_tracker.repositories.TransactionRepository;
 import com.github.mazstefan.sb_tracker.repositories.BudgetRepository;
@@ -198,17 +199,42 @@ public class TransactionService {
     }
 
     public List<CategorySpendDTO> generateMonthlyReport(Long userId, int month, int year) {
-        List<CategorySpendDTO> spent = transactionRepository.getMonthlySpendReport(userId, month, year);
-        List<Budget> budgets = budgetRepository.findAllByUserId(userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        boolean isAdmin = user.getRole() == Role.ADMIN;
+        boolean includeOwnerInfo = isAdmin || user.getGroup() != null;
+
+        List<CategorySpendDTO> spent;
+        List<Budget> budgets;
+
+        if (isAdmin) {
+                spent = transactionRepository.getAllMonthlySpendReport(month, year); 
+                budgets = budgetRepository.findAll(); 
+        } else {
+                spent = findAllSpendForUserContext(user, month, year);
+                budgets = findAllBudgetForUserContext(user);
+        }
 
         return spent.stream().map(spend -> {
-        BigDecimal limit = budgets.stream()
-                .filter(b -> b.getCategory().getName().equals(spend.categoryName()))
-                .findFirst()
-                .map(b -> b.getMonthlyLimit()) 
-                .orElse(BigDecimal.ZERO);
+                Budget matchingBudget = budgets.stream()
+                        .filter(b -> 
+                        b.getCategory().getName().equals(spend.categoryName()) &&
+                        (spend.ownerEmail() == null || b.getUser().getEmail().equals(spend.ownerEmail())) 
+                        )
+                        .findFirst()
+                        .orElse(null);
+                        
+                BigDecimal limit = matchingBudget != null 
+                        ? matchingBudget.getMonthlyLimit() 
+                        : BigDecimal.ZERO;
                 
-        return spend.withLimit(limit);
+                String ownerEmail = (includeOwnerInfo && matchingBudget != null)
+                        ? matchingBudget.getUser().getEmail()
+                        : null;
+
+                return spend.withLimitOwner(limit, ownerEmail);
+                
         }).toList();
     }
 
@@ -226,6 +252,20 @@ public class TransactionService {
                 return transactionRepository.findAllByUserGroupId(user.getGroup().getId());
         else
                 return transactionRepository.findAllByUserId(user.getId());
+    }
+
+    private List<CategorySpendDTO> findAllSpendForUserContext(User user, int month, int year) {
+        if (user.getGroup() != null)
+                return transactionRepository.getGroupMonthlySpendReport(user.getGroup().getId(), month, year);
+        else
+                return transactionRepository.getMonthlySpendReport(user.getId(), month, year);
+    }
+
+    private List<Budget> findAllBudgetForUserContext(User user) {
+        if (user.getGroup() != null)
+                return budgetRepository.findAllByUserGroupId(user.getGroup().getId());
+        else
+                return budgetRepository.findAllByUserId(user.getId());
     }
 
     private Category findCategoryForUserContext(Long categoryId, User user) {

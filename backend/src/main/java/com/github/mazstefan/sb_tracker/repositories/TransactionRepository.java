@@ -65,4 +65,13 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             @Param("year") int year
     );
 
+    @Query("SELECT new com.github.mazstefan.sb_tracker.dtos.CategorySpendDTO(c.name, c.type, SUM(t.amount)) " +
+            "FROM Transaction t " +
+            "JOIN t.category c " +
+            "WHERE MONTH(t.date) = :month AND YEAR(t.date) = :year " +
+            "GROUP BY c.name, c.type")
+    List<CategorySpendDTO> getAllMonthlySpendReport(
+            @Param("month") int month, 
+            @Param("year") int year
+    );
 }
