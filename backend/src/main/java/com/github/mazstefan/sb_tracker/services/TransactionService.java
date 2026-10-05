@@ -220,7 +220,7 @@ public class TransactionService {
                 Budget matchingBudget = budgets.stream()
                         .filter(b -> 
                         b.getCategory().getName().equals(spend.categoryName()) &&
-                        (spend.ownerEmail() == null || b.getUser().getEmail().equals(spend.ownerEmail())) 
+                        b.getUser().getEmail().equals(spend.ownerEmail()) 
                         )
                         .findFirst()
                         .orElse(null);
@@ -228,13 +228,10 @@ public class TransactionService {
                 BigDecimal limit = matchingBudget != null 
                         ? matchingBudget.getMonthlyLimit() 
                         : BigDecimal.ZERO;
-                
-                String ownerEmail = (includeOwnerInfo && matchingBudget != null)
-                        ? matchingBudget.getUser().getEmail()
-                        : null;
 
-                return spend.withLimitOwner(limit, ownerEmail);
-                
+                String finalOwnerEmail = includeOwnerInfo ? spend.ownerEmail() : null;
+
+                return spend.withLimitOwner(limit, finalOwnerEmail);
         }).toList();
     }
 

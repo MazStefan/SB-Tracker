@@ -43,33 +43,36 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
         @Param("year") int year
     );
 
-    @Query("SELECT new com.github.mazstefan.sb_tracker.dtos.CategorySpendDTO(c.name, c.type, SUM(t.amount)) " +
+    @Query("SELECT new com.github.mazstefan.sb_tracker.dtos.CategorySpendDTO(c.name, c.type, SUM(t.amount), u.email) " +
             "FROM Transaction t " +
             "JOIN t.category c " +
-            "WHERE t.user.id = :userId AND MONTH(t.date) = :month AND YEAR(t.date) = :year " +
-            "GROUP BY c.name, c.type")
+            "JOIN t.user u " +
+            "WHERE u.id = :userId AND MONTH(t.date) = :month AND YEAR(t.date) = :year " +
+            "GROUP BY c.name, c.type, u.email")
     List<CategorySpendDTO> getMonthlySpendReport(
             @Param("userId") Long userId, 
             @Param("month") int month, 
             @Param("year") int year
     );
 
-    @Query("SELECT new com.github.mazstefan.sb_tracker.dtos.CategorySpendDTO(c.name, c.type, SUM(t.amount)) " +
+    @Query("SELECT new com.github.mazstefan.sb_tracker.dtos.CategorySpendDTO(c.name, c.type, SUM(t.amount), u.email) " +
             "FROM Transaction t " +
             "JOIN t.category c " +
-            "WHERE t.user.group.id = :groupId AND MONTH(t.date) = :month AND YEAR(t.date) = :year " +
-            "GROUP BY c.name, c.type")
+            "JOIN t.user u " +
+            "WHERE u.group.id = :groupId AND MONTH(t.date) = :month AND YEAR(t.date) = :year " +
+            "GROUP BY c.name, c.type, u.email")
     List<CategorySpendDTO> getGroupMonthlySpendReport(
             @Param("groupId") Long groupId,
             @Param("month") int month,
             @Param("year") int year
     );
 
-    @Query("SELECT new com.github.mazstefan.sb_tracker.dtos.CategorySpendDTO(c.name, c.type, SUM(t.amount)) " +
+    @Query("SELECT new com.github.mazstefan.sb_tracker.dtos.CategorySpendDTO(c.name, c.type, SUM(t.amount), u.email) " +
             "FROM Transaction t " +
             "JOIN t.category c " +
+            "JOIN t.user u " +
             "WHERE MONTH(t.date) = :month AND YEAR(t.date) = :year " +
-            "GROUP BY c.name, c.type")
+            "GROUP BY c.name, c.type, u.email")
     List<CategorySpendDTO> getAllMonthlySpendReport(
             @Param("month") int month, 
             @Param("year") int year

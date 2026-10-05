@@ -154,7 +154,7 @@ export default function Dashboard() {
 
                     {/* MIDDLE COLUMN: Transactions */}
                     <div className="lg:col-span-2">
-                        <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 h-full transition-colors duration-200">
+                        <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 h-fit transition-colors duration-200">
                             <TransactionManager
                                 categories={categories}
                                 refreshTrigger={refreshTrigger}
@@ -172,7 +172,7 @@ export default function Dashboard() {
                             />
                         </section>
 
-                        <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 h-full transition-colors duration-200">
+                        <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 h-fit transition-colors duration-200">
                             <ReportManager refreshTrigger={refreshTrigger} />
                         </section>
                     </div>

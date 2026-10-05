@@ -9,6 +9,10 @@ public record CategorySpendDTO(String categoryName, String categoryType, BigDeci
     public CategorySpendDTO(String categoryName, CategoryType categoryType, BigDecimal totalSpent) {
         this(categoryName, categoryType.name(), totalSpent, BigDecimal.ZERO, null); 
     }
+
+    public CategorySpendDTO(String categoryName, CategoryType categoryType, BigDecimal totalSpent, String ownerEmail) {
+        this(categoryName, categoryType.name(), totalSpent, BigDecimal.ZERO, ownerEmail); 
+    }
     
     public CategorySpendDTO withLimit(BigDecimal limit) {
         return new CategorySpendDTO(this.categoryName, this.categoryType, this.totalSpent, limit, null);
