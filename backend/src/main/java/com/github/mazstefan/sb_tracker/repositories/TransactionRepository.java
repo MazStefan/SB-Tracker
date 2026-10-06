@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -59,22 +60,34 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             "FROM Transaction t " +
             "JOIN t.category c " +
             "JOIN t.user u " +
-            "WHERE u.group.id = :groupId AND MONTH(t.date) = :month AND YEAR(t.date) = :year " +
+            "WHERE u.id = :userId AND t.date >= :startDate AND t.date <= :endDate " +
             "GROUP BY c.name, c.type, u.email")
-    List<CategorySpendDTO> getGroupMonthlySpendReport(
-            @Param("groupId") Long groupId,
-            @Param("month") int month,
-            @Param("year") int year
+    List<CategorySpendDTO> getMonthlySpendReport(
+            @Param("userId") Long userId, 
+            @Param("startDate") LocalDateTime startDate, 
+            @Param("endDate") LocalDateTime endDate
     );
 
     @Query("SELECT new com.github.mazstefan.sb_tracker.dtos.CategorySpendDTO(c.name, c.type, SUM(t.amount), u.email) " +
             "FROM Transaction t " +
             "JOIN t.category c " +
             "JOIN t.user u " +
-            "WHERE MONTH(t.date) = :month AND YEAR(t.date) = :year " +
+            "WHERE u.group.id = :groupId AND t.date >= :startDate AND t.date <= :endDate " +
+            "GROUP BY c.name, c.type, u.email")
+    List<CategorySpendDTO> getGroupMonthlySpendReport(
+            @Param("groupId") Long groupId, 
+            @Param("startDate") LocalDateTime startDate, 
+            @Param("endDate") LocalDateTime endDate
+    );
+
+        @Query("SELECT new com.github.mazstefan.sb_tracker.dtos.CategorySpendDTO(c.name, c.type, SUM(t.amount), u.email) " +
+            "FROM Transaction t " +
+            "JOIN t.category c " +
+            "JOIN t.user u " +
+            "WHERE t.date >= :startDate AND t.date <= :endDate " +
             "GROUP BY c.name, c.type, u.email")
     List<CategorySpendDTO> getAllMonthlySpendReport(
-            @Param("month") int month, 
-            @Param("year") int year
+            @Param("startDate") LocalDateTime startDate, 
+            @Param("endDate") LocalDateTime endDate
     );
 }

@@ -18,6 +18,8 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -198,7 +200,7 @@ public class TransactionService {
         }
     }
 
-    public List<CategorySpendDTO> generateMonthlyReport(Long userId, int month, int year) {
+    public List<CategorySpendDTO> generateMonthlyReport(Long userId, LocalDateTime startDate, LocalDateTime endDate) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -207,31 +209,29 @@ public class TransactionService {
 
         List<CategorySpendDTO> spent;
         List<Budget> budgets;
+        LocalDate budgetStart = startDate.toLocalDate();
+        LocalDate budgetEnd = endDate.toLocalDate();
 
         if (isAdmin) {
-                spent = transactionRepository.getAllMonthlySpendReport(month, year); 
-                budgets = budgetRepository.findAll(); 
+                spent = transactionRepository.getAllMonthlySpendReport(startDate, endDate); 
+                budgets = budgetRepository.findAllByMonthYearBetween(budgetStart, budgetEnd); 
         } else {
-                spent = findAllSpendForUserContext(user, month, year);
-                budgets = findAllBudgetForUserContext(user);
+                spent = findAllSpendForUserContext(user, startDate, endDate);
+                budgets = findAllBudgetForUserContext(user, budgetStart, budgetEnd);
         }
 
         return spent.stream().map(spend -> {
-                Budget matchingBudget = budgets.stream()
-                        .filter(b -> 
-                        b.getCategory().getName().equals(spend.categoryName()) &&
-                        b.getUser().getEmail().equals(spend.ownerEmail()) 
-                        )
-                        .findFirst()
-                        .orElse(null);
-                        
-                BigDecimal limit = matchingBudget != null 
-                        ? matchingBudget.getMonthlyLimit() 
-                        : BigDecimal.ZERO;
+            BigDecimal totalLimit = budgets.stream()
+                .filter(b -> 
+                    b.getCategory().getName().equals(spend.categoryName()) &&
+                    b.getUser().getEmail().equals(spend.ownerEmail()) 
+                )
+                .map(Budget::getMonthlyLimit)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-                String finalOwnerEmail = includeOwnerInfo ? spend.ownerEmail() : null;
+            String finalOwnerEmail = includeOwnerInfo ? spend.ownerEmail() : null;
 
-                return spend.withLimitOwner(limit, finalOwnerEmail);
+            return spend.withLimitOwner(totalLimit, finalOwnerEmail);
         }).toList();
     }
 
@@ -251,18 +251,18 @@ public class TransactionService {
                 return transactionRepository.findAllByUserId(user.getId());
     }
 
-    private List<CategorySpendDTO> findAllSpendForUserContext(User user, int month, int year) {
+    private List<CategorySpendDTO> findAllSpendForUserContext(User user, LocalDateTime startDate, LocalDateTime endDate) {
         if (user.getGroup() != null)
-                return transactionRepository.getGroupMonthlySpendReport(user.getGroup().getId(), month, year);
+                return transactionRepository.getGroupMonthlySpendReport(user.getGroup().getId(), startDate, endDate);
         else
-                return transactionRepository.getMonthlySpendReport(user.getId(), month, year);
+                return transactionRepository.getMonthlySpendReport(user.getId(), startDate, endDate);
     }
 
-    private List<Budget> findAllBudgetForUserContext(User user) {
+    private List<Budget> findAllBudgetForUserContext(User user, LocalDate startDate, LocalDate endDate) {
         if (user.getGroup() != null)
-                return budgetRepository.findAllByUserGroupId(user.getGroup().getId());
+                return budgetRepository.findAllByGroupIdAndMonthYearBetween(user.getGroup().getId(), startDate, endDate);
         else
-                return budgetRepository.findAllByUserId(user.getId());
+                return budgetRepository.findAllByUserIdAndMonthYearBetween(user.getId(), startDate, endDate);
     }
 
     private Category findCategoryForUserContext(Long categoryId, User user) {

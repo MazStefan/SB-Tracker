@@ -21,6 +21,17 @@ public interface BudgetRepository extends JpaRepository<Budget, Long> {
 
     List<Budget> findAllByUserGroupId(Long groupId);
 
+    List<Budget> findAllByUserIdAndMonthYearBetween(Long userId, LocalDate startDate, LocalDate endDate);
+
+    @Query("SELECT b FROM Budget b WHERE b.user.group.id = :groupId AND b.monthYear >= :startDate AND b.monthYear <= :endDate")
+    List<Budget> findAllByGroupIdAndMonthYearBetween(
+        @Param("groupId") Long groupId,
+        @Param("startDate") LocalDate startDate,
+        @Param("endDate") LocalDate endDate
+    );
+
+    List<Budget> findAllByMonthYearBetween(LocalDate startDate, LocalDate endDate);
+
     Optional<Budget> findByIdAndUserId(Long budgetId, Long userId);
 
     Optional<Budget> findByIdAndUserGroupId(Long budgetId, Long groupId);

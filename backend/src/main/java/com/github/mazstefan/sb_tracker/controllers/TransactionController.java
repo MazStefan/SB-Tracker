@@ -7,14 +7,15 @@ import com.github.mazstefan.sb_tracker.dtos.TransactionCreatedDTO;
 import com.github.mazstefan.sb_tracker.services.TransactionService;
 import com.github.mazstefan.sb_tracker.security.CustomUserDetails;
 import jakarta.validation.Valid;
+
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 
@@ -90,12 +91,12 @@ public class TransactionController {
     @GetMapping("/report")
     public ResponseEntity<List<CategorySpendDTO>> getMonthlyReport(
             Authentication authentication,
-            @RequestParam int month,
-            @RequestParam int year) {
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
         
         Long userId = extractUserId(authentication);
 
-        List<CategorySpendDTO> report = transactionService.generateMonthlyReport(userId, month, year);
+        List<CategorySpendDTO> report = transactionService.generateMonthlyReport(userId, startDate, endDate);
 
         return ResponseEntity.ok(report);
     }

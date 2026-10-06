@@ -4,59 +4,105 @@ import api from '../services/api';
 
 export default function ReportManager({ refreshTrigger }) {
     const [reportData, setReportData] = useState([]);
-    const [month, setMonth] = useState(new Date().getMonth() + 1); 
-    const [year, setYear] = useState(new Date().getFullYear());
+    // Start date states (defaults to current month)
+    const [startMonth, setStartMonth] = useState(new Date().getMonth() + 1); 
+    const [startYear, setStartYear] = useState(new Date().getFullYear());
+
+    // End date states (defaults to current month)
+    const [endMonth, setEndMonth] = useState(new Date().getMonth() + 1); 
+    const [endYear, setEndYear] = useState(new Date().getFullYear());
 
     useEffect(() => {
         const fetchReport = async () => {
             try {
-                const response = await api.get(`/transactions/report?month=${month}&year=${year}`);
+                // Format as YYYY-MM-DDT00:00:00
+                const startDate = `${startYear}-${String(startMonth).padStart(2, '0')}-01T00:00:00`;
+                
+                // Get the exact last day of the selected end month
+                const lastDayOfEndMonth = new Date(endYear, endMonth, 0).getDate();
+                const endDate = `${endYear}-${String(endMonth).padStart(2, '0')}-${lastDayOfEndMonth}T23:59:59`;
+
+                const response = await api.get(`/transactions/report?startDate=${startDate}&endDate=${endDate}`);
                 setReportData(response.data);
             } catch (err) {
                 console.error("Failed to fetch report", err);
             }
         };
         fetchReport();
-    }, [month, year, refreshTrigger]);
+    }, [startMonth, startYear, endMonth, endYear, refreshTrigger]); // Added new dependencies
 
     return (
         <div className="flex flex-col h-fit">
             <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4 text-center">
-                Monthly Spending
+                Spending Report
             </h3>
 
-            <div className="flex gap-3 mb-2">
-                <select 
-                    value={month} 
-                    onChange={(e) => setMonth(Number(e.target.value))} 
-                    className="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none"
-                >
-                    <option value={1}>January</option>
-                    <option value={2}>February</option>
-                    <option value={3}>March</option>
-                    <option value={4}>April</option>
-                    <option value={5}>May</option>
-                    <option value={6}>June</option>
-                    <option value={7}>July</option>
-                    <option value={8}>August</option>
-                    <option value={9}>September</option>
-                    <option value={10}>October</option>
-                    <option value={11}>November</option>
-                    <option value={12}>December</option>
-                </select>
-                
-                <input 
-                    type="number" 
-                    value={year} 
-                    onChange={(e) => setYear(Number(e.target.value))}
-                    className="w-24 px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 text-sm text-center"
-                />
+            <div className="flex flex-col gap-3 mb-2">
+                {/* From Row */}
+                <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-slate-600 dark:text-slate-400 w-10">From:</span>
+                    <select 
+                        value={startMonth} 
+                        onChange={(e) => setStartMonth(Number(e.target.value))} 
+                        className="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none"
+                    >
+                        <option value={1}>January</option>
+                        <option value={2}>February</option>
+                        <option value={3}>March</option>
+                        <option value={4}>April</option>
+                        <option value={5}>May</option>
+                        <option value={6}>June</option>
+                        <option value={7}>July</option>
+                        <option value={8}>August</option>
+                        <option value={9}>September</option>
+                        <option value={10}>October</option>
+                        <option value={11}>November</option>
+                        <option value={12}>December</option>
+                    </select>
+                    
+                    <input 
+                        type="number" 
+                        value={startYear} 
+                        onChange={(e) => setStartYear(Number(e.target.value))}
+                        className="w-24 px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 text-sm text-center"
+                    />
+                </div>
+
+                {/* To Row */}
+                <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-slate-600 dark:text-slate-400 w-10">To:</span>
+                    <select 
+                        value={endMonth} 
+                        onChange={(e) => setEndMonth(Number(e.target.value))} 
+                        className="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none"
+                    >
+                        <option value={1}>January</option>
+                        <option value={2}>February</option>
+                        <option value={3}>March</option>
+                        <option value={4}>April</option>
+                        <option value={5}>May</option>
+                        <option value={6}>June</option>
+                        <option value={7}>July</option>
+                        <option value={8}>August</option>
+                        <option value={9}>September</option>
+                        <option value={10}>October</option>
+                        <option value={11}>November</option>
+                        <option value={12}>December</option>
+                    </select>
+                    
+                    <input 
+                        type="number" 
+                        value={endYear} 
+                        onChange={(e) => setEndYear(Number(e.target.value))}
+                        className="w-24 px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 text-sm text-center"
+                    />
+                </div>
             </div>
 
-            <div className="flex flex-col gap-2 mt-4 overflow-y-auto pr-2 flex-1 min-h-0">
+            <div className="flex flex-col gap-2 mt-4 overflow-y-auto pr-2 max-h-[65vh]">
                 {reportData.length === 0 ? (
                     <p className="text-sm text-slate-500 dark:text-slate-400 text-center mt-4">
-                        No spending data for this month.
+                        No spending data for this period.
                     </p>
                 ) : (
                     reportData.map((item, index) => {
@@ -74,7 +120,6 @@ export default function ReportManager({ refreshTrigger }) {
                                 }`}
                             >
                                 <div className="flex flex-col gap-1">
-                                    {/* ⚠️ Added ownerEmail badge here */}
                                     {item.ownerEmail && (
                                         <span className="bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 text-[10px] px-2 py-0.5 rounded-full font-medium w-max">
                                             {item.ownerEmail}
